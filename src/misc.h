@@ -23,16 +23,18 @@
 #include <array>
 #include <cassert>
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <exception>  // IWYU pragma: keep
+// IWYU pragma: no_include <__exception/terminate.h>
+#include <functional>
 #include <iosfwd>
 #include <optional>
+#include <cstring>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include "types.h"   // <<< AGGIUNTO: definisce Hypnos::Value
 
 #define stringify2(x) #x
 #define stringify(x) stringify2(x)
@@ -125,23 +127,6 @@ void sync_cout_end();
 // True if and only if the binary is compiled on a little-endian machine
 static inline const std::uint16_t Le             = 1;
 static inline const bool          IsLittleEndian = *reinterpret_cast<const char*>(&Le) == 1;
-
-
-template<typename T, std::size_t MaxSize>
-class ValueList {
-
-   public:
-    std::size_t size() const { return size_; }
-    void        push_back(const T& value) { values_[size_++] = value; }
-    const T*    begin() const { return values_; }
-    const T*    end() const { return values_ + size_; }
-    const T&    operator[](int index) const { return values_[index]; }
-
-   private:
-    T           values_[MaxSize];
-    std::size_t size_ = 0;
-};
-
 
 template<typename T, std::size_t Size, std::size_t... Sizes>
 class MultiArray;
@@ -293,6 +278,94 @@ inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
 }
 
 
+template<typename T>
+inline void hash_combine(std::size_t& seed, const T& v) {
+    std::hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+template<>
+inline void hash_combine(std::size_t& seed, const std::size_t& v) {
+    seed ^= v + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+template<typename T>
+inline std::size_t get_raw_data_hash(const T& value) {
+    return std::hash<std::string_view>{}(
+      std::string_view(reinterpret_cast<const char*>(&value), sizeof(value)));
+}
+
+template<std::size_t Capacity>
+class FixedString {
+   public:
+    FixedString() :
+        length_(0) {
+        data_[0] = '\0';
+    }
+
+    FixedString(const char* str) {
+        size_t len = std::strlen(str);
+        if (len > Capacity)
+            std::terminate();
+        std::memcpy(data_, str, len);
+        length_        = len;
+        data_[length_] = '\0';
+    }
+
+    FixedString(const std::string& str) {
+        if (str.size() > Capacity)
+            std::terminate();
+        std::memcpy(data_, str.data(), str.size());
+        length_        = str.size();
+        data_[length_] = '\0';
+    }
+
+    std::size_t size() const { return length_; }
+    std::size_t capacity() const { return Capacity; }
+
+    const char* c_str() const { return data_; }
+    const char* data() const { return data_; }
+
+    char& operator[](std::size_t i) { return data_[i]; }
+
+    const char& operator[](std::size_t i) const { return data_[i]; }
+
+    FixedString& operator+=(const char* str) {
+        size_t len = std::strlen(str);
+        if (length_ + len > Capacity)
+            std::terminate();
+        std::memcpy(data_ + length_, str, len);
+        length_ += len;
+        data_[length_] = '\0';
+        return *this;
+    }
+
+    FixedString& operator+=(const FixedString& other) { return (*this += other.c_str()); }
+
+    operator std::string() const { return std::string(data_, length_); }
+
+    operator std::string_view() const { return std::string_view(data_, length_); }
+
+    template<typename T>
+    bool operator==(const T& other) const noexcept {
+        return (std::string_view) (*this) == other;
+    }
+
+    template<typename T>
+    bool operator!=(const T& other) const noexcept {
+        return (std::string_view) (*this) != other;
+    }
+
+    void clear() {
+        length_  = 0;
+        data_[0] = '\0';
+    }
+
+   private:
+    char        data_[Capacity + 1];  // +1 for null terminator
+    std::size_t length_;
+};
+
 struct CommandLine {
    public:
     CommandLine(int _argc, char** _argv) :
@@ -308,6 +381,7 @@ struct CommandLine {
 
 // Forward declaration required for is_game_decided
 class Position;
+using Value = int;  // Fix: ensure Value is known when including misc.h
 
 namespace Utility {
 
@@ -326,6 +400,15 @@ bool is_game_decided(const Position& pos, Value lastScore);
 
 } // namespace Utility
 
+#if defined(__GNUC__)
+    #define sf_always_inline __attribute__((always_inline))
+#elif defined(__MSVC)
+    #define sf_always_inline __forceinline
+#else
+    // do nothign for other compilers
+    #define sf_always_inline
+#endif
+
 #if defined(__GNUC__) && !defined(__clang__)
     #if __GNUC__ >= 13
         #define sf_assume(cond) __attribute__((assume(cond)))
@@ -343,5 +426,12 @@ bool is_game_decided(const Position& pos, Value lastScore);
 #endif
 
 }  // namespace Hypnos
+
+template<std::size_t N>
+struct std::hash<Hypnos::FixedString<N>> {
+    std::size_t operator()(const Hypnos::FixedString<N>& fstr) const noexcept {
+        return std::hash<std::string_view>{}((std::string_view) fstr);
+    }
+};
 
 #endif  // #ifndef MISC_H_INCLUDED

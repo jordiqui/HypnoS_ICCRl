@@ -41,7 +41,7 @@ namespace Hypnos {
 namespace {
 
 // Version number or dev.
-constexpr std::string_view version = "1.0.1";
+constexpr std::string_view version = "211125";
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -127,7 +127,7 @@ class Logger {
 //      HypnoS version
 std::string engine_version_info() {
     std::stringstream ss;
-    ss << "HypnoS " << version << std::setfill('0');
+    ss << "HypnoS DYN " << version << std::setfill('0');
 
     if constexpr (version == "dev")
     {
@@ -260,12 +260,12 @@ std::string compiler_info() {
 #if defined(USE_SSE2)
     compiler += " SSE2";
 #endif
-    compiler += (HasPopCnt ? " POPCNT" : "");
 #if defined(USE_NEON_DOTPROD)
     compiler += " NEON_DOTPROD";
 #elif defined(USE_NEON)
     compiler += " NEON";
 #endif
+    compiler += (HasPopCnt ? " POPCNT" : "");
 
 #if !defined(NDEBUG)
     compiler += " DEBUG";
@@ -547,6 +547,6 @@ bool is_game_decided(const Position& pos, Value lastScore) {
     return false;
 }
 
-} // namespace Utility
+}  // namespace Utility
 
 }  // namespace Hypnos

@@ -18,13 +18,15 @@
 
 #include <iostream>
 #include <ctime>
+#include <memory>
 
 #include "bitboard.h"
 #include "misc.h"
+#include "nnue/features/full_threats.h"
 #include "position.h"
+#include "tune.h"
 #include "types.h"
 #include "uci.h"
-#include "tune.h"
 
 void showLogo();
 
@@ -55,11 +57,13 @@ int main(int argc, char* argv[]) {
 
     Bitboards::init();
     Position::init();
-    UCIEngine uci(argc, argv);
+    Eval::NNUE::Features::init_threat_offsets();
 
-    Tune::init(uci.engine_options());
+    auto uci = std::make_unique<UCIEngine>(argc, argv);
 
-    uci.loop();
+    Tune::init(uci->engine_options());
+
+    uci->loop();
 
     return 0;
 }

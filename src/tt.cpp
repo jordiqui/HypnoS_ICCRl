@@ -250,4 +250,4 @@ TTEntry* TranspositionTable::first_entry(const Key key) const {
     return &table[mul_hi64(key, clusterCount)].entry[0];
 }
 
-}  // namespace Hypnos
+}  // namespace Stockfish

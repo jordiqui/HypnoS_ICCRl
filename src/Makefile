@@ -37,17 +37,10 @@ else ifeq ($(COMP),mingw)
 	endif
 endif
 
-### Executable name
-ifeq ($(target_windows),yes)
-	EXE = hypnos.exe
-else
-	EXE = hypnos
-endif
 
 ### Installation dir definitions
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
-PROFILE_DIR ?= profdir
 
 ### Built-in benchmark for pgo-builds
 PGOBENCH = $(WINE_PATH) ./$(EXE) bench
@@ -56,15 +49,16 @@ PGOBENCH = $(WINE_PATH) ./$(EXE) bench
 SRCS = benchmark.cpp bitboard.cpp evaluate.cpp experience.cpp main.cpp \
 	misc.cpp movegen.cpp movepick.cpp polybook.cpp position.cpp \
 	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
-	nnue/nnue_accumulator.cpp nnue/nnue_misc.cpp nnue/features/half_ka_v2_hm.cpp nnue/network.cpp \
+	nnue/nnue_accumulator.cpp nnue/nnue_misc.cpp nnue/network.cpp \
+	nnue/features/half_ka_v2_hm.cpp nnue/features/full_threats.cpp \
 	engine.cpp score.cpp memory.cpp eval_weights.cpp dyn_gate.cpp
 
 HEADERS = benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.h history.h \
-		nnue/nnue_misc.h nnue/features/half_ka_v2_hm.h nnue/layers/affine_transform.h \
-		nnue/layers/affine_transform_sparse_input.h nnue/layers/clipped_relu.h \
-		nnue/layers/sqr_clipped_relu.h nnue/nnue_accumulator.h nnue/nnue_architecture.h \
-		nnue/nnue_common.h nnue/nnue_feature_transformer.h nnue/simd.h position.h \
-		search.h syzygy/tbprobe.h thread.h thread_win32_osx.h timeman.h \
+		nnue/nnue_misc.h nnue/features/half_ka_v2_hm.h nnue/features/full_threats.h \
+		nnue/layers/affine_transform.h nnue/layers/affine_transform_sparse_input.h \
+		nnue/layers/clipped_relu.h nnue/layers/sqr_clipped_relu.h nnue/nnue_accumulator.h \
+		nnue/nnue_architecture.h nnue/nnue_common.h nnue/nnue_feature_transformer.h nnue/simd.h \
+		position.h search.h syzygy/tbprobe.h thread.h thread_win32_osx.h timeman.h \
 		tt.h tune.h types.h uci.h ucioption.h perft.h nnue/network.h engine.h score.h numa.h memory.h \
 		experience.h hypnos_zobrist.h experience_compat.h eval_weights.h dyn_gate.h
 
@@ -437,7 +431,7 @@ endif
 ifeq ($(COMP),gcc)
 	comp=gcc
 	CXX=g++
-	CXXFLAGS += -pedantic -Wextra -Wshadow -Wmissing-declarations
+	CXXFLAGS += -pedantic -Wextra -Wshadow -Wmissing-declarations -Wstack-usage=128000
 
 	ifeq ($(arch),$(filter $(arch),armv7 armv8 riscv64))
 		ifeq ($(OS),Android)
@@ -620,6 +614,19 @@ ifneq ($(comp),mingw)
 		ifneq ($(KERNEL),Haiku)
 			ifneq ($(COMP),ndk)
 				LDFLAGS += -lpthread
+
+				add_lrt = yes
+				ifeq ($(target_windows),yes)
+					add_lrt = no
+				endif
+
+				ifeq ($(KERNEL),Darwin)
+					add_lrt = no
+				endif
+
+				ifeq ($(add_lrt),yes)
+					LDFLAGS += -lrt
+				endif
 			endif
 		endif
 	endif
@@ -630,6 +637,7 @@ ifeq ($(debug),no)
 	CXXFLAGS += -DNDEBUG
 else
 	CXXFLAGS += -g
+	CXXFLAGS += -D_GLIBCXX_ASSERTIONS -D_GLIBCXX_DEBUG
 endif
 
 ### 3.2.2 Debugging with undefined behavior sanitizers
@@ -866,9 +874,15 @@ endif
 ### Section 4. Public Targets
 ### ==========================================================================
 
+CXXFLAGS += -DEvalFileDefaultNameBig=\"$(EVALFILE)\"
+CXXFLAGS += -DEvalFileDefaultNameSmall=\"nn-37f18f62d772.nnue\"
+
+build: config-sanity
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+
 help:
 	@echo "" && \
-	echo "To compile stockfish, type: " && \
+	echo "To compile hypnos, type: " && \
 	echo "" && \
 	echo "make -j target [ARCH=arch] [COMP=compiler] [COMPCXX=cxx]" && \
 	echo "" && \
@@ -952,9 +966,6 @@ endif
 analyze: net config-sanity objclean
 	$(MAKE) -k ARCH=$(ARCH) COMP=$(COMP) $(OBJS)
 
-build: net config-sanity
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
-
 profile-build: net config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
@@ -989,7 +1000,7 @@ objclean:
 
 # clean auxiliary profiling files
 profileclean:
-	@rm -rf $(PROFILE_DIR)
+	@rm -rf profdir
 	@rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s PGOBENCH.out
 	@rm -f hypnos.profdata *.profraw
 	@rm -f hypnos.*args*
@@ -1010,7 +1021,7 @@ format:
 
 all: $(EXE) .depend
 
-config-sanity: net
+config-sanity:
 	@echo ""
 	@echo "Config:" && \
 	echo "debug: '$(debug)'" && \
@@ -1079,7 +1090,7 @@ config-sanity: net
 	 test "$(comp)" = "aarch64-linux-android21-clang")
 
 $(EXE): $(OBJS)
-	$(CXX) -o $(EXE) $(OBJS) $(LDFLAGS) $(EXTRALDFLAGS)
+	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 # Force recompilation to ensure version info is up-to-date
 misc.o: FORCE
@@ -1092,25 +1103,25 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-	$(XCRUN) $(LLVM_PROFDATA) merge -output=stockfish.profdata *.profraw
+	$(XCRUN) $(LLVM_PROFDATA) merge -output=hypnos.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use=stockfish.profdata' \
-	EXTRALDFLAGS='' \
+	EXTRACXXFLAGS='-fprofile-use=hypnos.profdata' \
+	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
-	@mkdir -p $(PROFILE_DIR)
+	@mkdir -p profdir
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate=$(PROFILE_DIR)' \
+	EXTRACXXFLAGS='-fprofile-generate=profdir' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use=$(PROFILE_DIR) -fprofile-correction -fno-peel-loops -fno-tracer' \
+	EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
 	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
-	EXTRALDFLAGS='' \
+	EXTRALDFLAGS='-lgcov' \
 	all
 
 icx-profile-make:
@@ -1120,9 +1131,9 @@ icx-profile-make:
 	all
 
 icx-profile-use:
-	$(XCRUN) $(LLVM_PROFDATA) merge -output=stockfish.profdata *.profraw
+	$(XCRUN) $(LLVM_PROFDATA) merge -output=hypnos.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
+	EXTRACXXFLAGS='-fprofile-instr-use=hypnos.profdata' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 

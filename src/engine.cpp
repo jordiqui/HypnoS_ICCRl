@@ -35,11 +35,13 @@
 #include "misc.h"
 #include "nnue/network.h"
 #include "nnue/nnue_common.h"
+#include "nnue/nnue_misc.h"
 #include "numa.h"
 #include "perft.h"
 #include "polybook.h"
 #include "position.h"
 #include "search.h"
+#include "shm.h"
 #include "syzygy/tbprobe.h"
 #include "types.h"
 #include "uci.h"
@@ -84,9 +86,13 @@ Engine::Engine(std::optional<std::string> path) :
     threads(),
     networks(
       numaContext,
-      NN::Networks(
-        NN::NetworkBig({EvalFileDefaultNameBig, "None", ""}, NN::EmbeddedNNUEType::BIG),
-        NN::NetworkSmall({EvalFileDefaultNameSmall, "None", ""}, NN::EmbeddedNNUEType::SMALL))) {
+      // Heap-allocate because sizeof(NN::Networks) is large
+      std::make_unique<NN::Networks>(
+        std::make_unique<NN::NetworkBig>(NN::EvalFile{EvalFileDefaultNameBig, "None", ""},
+                                         NN::EmbeddedNNUEType::BIG),
+        std::make_unique<NN::NetworkSmall>(NN::EvalFile{EvalFileDefaultNameSmall, "None", ""},
+                                           NN::EmbeddedNNUEType::SMALL))) {
+
     pos.set(StartFEN, false, &states->back());
 
 #ifdef HYP_FIXED_ZOBRIST
@@ -133,10 +139,8 @@ Engine::Engine(std::optional<std::string> path) :
 
     options.add("Skill Level", Option(20, 0, 20));
 
-    // Time manager knobs
-    options.add("Move Overhead",          Option(100, 0, 5000));   // ms
-    options.add("Minimum Thinking Time",  Option(100, 0, 2000));   // ms
-    options.add("Slow Mover",             Option(100, 10, 500));   // percent (100 = no change)
+    options.add("MoveOverhead", Option(10, 0, 5000));
+
     options.add("nodestime", Option(0, 0, 10000));
 
     options.add("UCI_Chess960", Option(false));
@@ -147,11 +151,6 @@ Engine::Engine(std::optional<std::string> path) :
                 Option(Hypnos::Search::Skill::LowestElo, Hypnos::Search::Skill::LowestElo,
                        Hypnos::Search::Skill::HighestElo));
 
-    // Fail-high/low info throttling (UCI-tunable)
-    options.add("FailInfo Enabled",   Option(true));
-    options.add("FailInfo First ms",  Option(4000, 0, 60000));
-    options.add("FailInfo Min Nodes", Option(10000000, 0, 1000000000));
-    options.add("FailInfo Rate ms",   Option(400, 0, 10000));
 
     // Debug: print NNUE weights once per search at root (main thread)
     options.add("NNUE Log Weights", Option(false));
@@ -200,7 +199,7 @@ Engine::Engine(std::optional<std::string> path) :
     //#ifdef HYP_FIXED_ZOBRIST
     // ===== HypnoS Experience UCI options =====
     options.add("Experience Enabled",
-                Option(true, [](const Option& opt) {
+                Option(false, [](const Option& opt) {
                     on_exp_enabled(opt);
                     sync_cout << "info string Experience Enabled is now: "
                               << (opt ? "enabled" : "disabled") << sync_endl;
@@ -459,6 +458,36 @@ void Engine::set_ponderhit(bool b) { threads.main_manager()->ponder = b; }
 void Engine::verify_networks() const {
     networks->big.verify(options["EvalFile"], onVerifyNetworks);
     networks->small.verify(options["EvalFileSmall"], onVerifyNetworks);
+
+    auto statuses = networks.get_status_and_errors();
+    for (size_t i = 0; i < statuses.size(); ++i)
+    {
+        const auto [status, error] = statuses[i];
+        std::string message        = "Network replica " + std::to_string(i + 1) + ": ";
+        if (status == SystemWideSharedConstantAllocationStatus::NoAllocation)
+        {
+            message += "No allocation.";
+        }
+        else if (status == SystemWideSharedConstantAllocationStatus::LocalMemory)
+        {
+            message += "Local memory.";
+        }
+        else if (status == SystemWideSharedConstantAllocationStatus::SharedMemory)
+        {
+            message += "Shared memory.";
+        }
+        else
+        {
+            message += "Unknown status.";
+        }
+
+        if (error.has_value())
+        {
+            message += " " + *error;
+        }
+
+        onVerifyNetworks(message);
+    }
 }
 
 void Engine::load_networks() {

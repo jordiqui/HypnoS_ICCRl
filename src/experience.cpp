@@ -974,6 +974,7 @@ bool            learningPaused    = false;
 ////////////////////////////////////////////////////////////////
 
 std::atomic<bool> g_benchMode{false};
+std::atomic<bool> g_benchSingleShot{false};
 
 void touch() {
     const std::string filename = Options["Experience File"];
@@ -1709,13 +1710,19 @@ void resume_learning() { learningPaused = false; }
 bool is_learning_paused() { return learningPaused; }
 
 void add_pv_experience(const Key k, const Move m, const Value v, const Depth d) {
-    // Drop writes during bench, when disabled, paused, or readonly
+    // Drop writes when disabled, paused, or readonly
     if (!currentExperience
-        || g_benchMode.load(std::memory_order_relaxed)
+													  
         || !experienceEnabled
         || learningPaused
         || (bool)Options["Experience Readonly"])
         return;
+
+    // Bench: allow ONE single write (single-shot), then block all subsequent writes
+    if (g_benchMode.load(std::memory_order_relaxed)) {
+        if (!g_benchSingleShot.exchange(false, std::memory_order_acq_rel))
+            return;
+    }
 
     currentExperience->add_pv_experience(k, m, v, d);
 }

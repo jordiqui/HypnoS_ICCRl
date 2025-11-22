@@ -32,7 +32,7 @@
 #include "numa.h"
 #include "position.h"
 #include "search.h"
-#include "syzygy/tbprobe.h"  // for Hypnos::Depth
+#include "syzygy/tbprobe.h"  // for >Hypnos::Depth
 #include "thread.h"
 #include "tt.h"
 #include "ucioption.h"
@@ -115,10 +115,10 @@ class Engine {
     Position     pos;
     StateListPtr states;
 
-    OptionsMap                               options;
-    ThreadPool                               threads;
-    TranspositionTable                       tt;
-    LazyNumaReplicated<Eval::NNUE::Networks> networks;
+    OptionsMap                                         options;
+    ThreadPool                                         threads;
+    TranspositionTable                                 tt;
+    LazyNumaReplicatedSystemWide<Eval::NNUE::Networks> networks;
 
     Search::SearchManager::UpdateContext  updateContext;
     std::function<void(std::string_view)> onVerifyNetworks;
