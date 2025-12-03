@@ -41,7 +41,7 @@ namespace Hypnos {
 namespace {
 
 // Version number or dev.
-constexpr std::string_view version = "211125";
+constexpr std::string_view version = " ";
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -127,7 +127,7 @@ class Logger {
 //      HypnoS version
 std::string engine_version_info() {
     std::stringstream ss;
-    ss << "HypnoS DYN " << version << std::setfill('0');
+    ss << "HypnoS " << version << std::setfill('0');
 
     if constexpr (version == "dev")
     {

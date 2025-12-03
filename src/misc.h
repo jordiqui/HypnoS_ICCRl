@@ -402,7 +402,7 @@ bool is_game_decided(const Position& pos, Value lastScore);
 
 #if defined(__GNUC__)
     #define sf_always_inline __attribute__((always_inline))
-#elif defined(__MSVC)
+#elif defined(_MSC_VER)
     #define sf_always_inline __forceinline
 #else
     // do nothign for other compilers

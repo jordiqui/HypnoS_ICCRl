@@ -977,6 +977,11 @@ std::atomic<bool> g_benchMode{false};
 std::atomic<bool> g_benchSingleShot{false};
 
 void touch() {
+
+    // Do not create or modify EXP file if Experience is disabled
+    if (!Experience::enabled())
+        return;
+
     const std::string filename = Options["Experience File"];
     if (filename.empty())
         return;
