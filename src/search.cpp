@@ -578,6 +578,7 @@ void Search::Worker::start_searching() {
     // Random Open selection (pick among near-equal root moves)
     // Apply only at root, in early plies, and avoid ponder/infinite/mate modes.
     if (bool(options["Random Open Mode"])
+        && bookMove == Move::none()
         && !main_manager()->ponder && !limits.infinite && !limits.mate
         && rootPos.game_ply() < int(options["Random Open Plies"]))
     {
