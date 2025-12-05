@@ -274,15 +274,17 @@ Engine::Engine(std::optional<std::string> path) :
                     return std::nullopt;
                 }));
 
-    options.add("Random Open Plies",    Option(16, 0, 100));      // Active only in the first N plies
+    options.add("Random Open Mode", Option(false));
 
-    options.add("Random Open MultiPV",  Option(3,  1, 64));       // Ensure at least this MultiPV early
+    options.add("Random Open Plies",    Option(16, 0, 20));      // Active only in the first N plies
 
-    options.add("Random Open DeltaCp",  Option(25, 0, 500));      // Eligible window around best (centipawns)
+    options.add("Random Open MultiPV",  Option(3,  1, 6));       // Ensure at least this MultiPV early
 
-    options.add("Random Open SoftmaxT", Option(12, 1, 200));      // Softmax temperature in cp (higher = more random)
+    options.add("Random Open DeltaCp",  Option(25, 0, 100));      // Eligible window around best (centipawns)
 
-    options.add("Random Seed",          Option(0,  0, 1000000));  // 0 = nondeterministic; >0 = reproducible
+    options.add("Random Open SoftmaxT", Option(12, 1, 40));      // Softmax temperature in cp (higher = more random)
+
+    options.add("Random Seed",          Option(0,  0, 10000));  // 0 = nondeterministic; >0 = reproducible
 
 
     options.add(  //
