@@ -139,11 +139,11 @@ Engine::Engine(std::optional<std::string> path) :
 
     options.add("Skill Level", Option(20, 0, 20));
 
-    options.add("MoveOverhead", Option(100, 0, 5000));
+    options.add("MoveOverhead", Option(25, 0, 5000));
 
-    options.add("Minimum Thinking Time", Option(100, 0, 5000));
+    options.add("Minimum Thinking Time", Option(20, 0, 5000));
 
-    options.add("Slow Mover", Option(100, 10, 1000));
+    options.add("Slow Mover", Option(80, 10, 1000));
 
     options.add("nodestime", Option(0, 0, 10000));
 
