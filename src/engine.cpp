@@ -255,6 +255,14 @@ Engine::Engine(std::optional<std::string> path) :
                 }));
 
     //#endif
+	
+    options.add("Tactical Mode",
+                Option(false, [](const Option& opt) {
+                    sync_cout << "info string Tactical Mode = "
+                              << (opt ? "ON (reduced pruning < depth 7)" : "OFF")
+                              << sync_endl;
+                    return std::nullopt;
+                }));
 
     options.add("Variety",
                 Option(0, 0, 40, [](const Option& opt) {

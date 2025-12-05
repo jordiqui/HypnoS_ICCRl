@@ -1020,6 +1020,9 @@ Value Search::Worker::search(
     constexpr bool PvNode   = nodeType != NonPV;
     constexpr bool rootNode = nodeType == Root;
     const bool     allNode  = !(PvNode || cutNode);
+	// Tactical Mode: disable pruning and reductions globally
+	bool tactical = bool(options["Tactical Mode"]);
+    bool forceDeep = tactical;
 
     // Dynamic weights: OFF in cut nodes and shallow PV nodes
     if (cutNode || (PvNode && depth < 12))
@@ -1418,8 +1421,11 @@ if constexpr (!PvNode)
     // Step 7. Razoring
     // If eval is really low, skip search entirely and return the qsearch value.
     // For PvNodes, we must have a guard against mates being returned.
-    if (!PvNode && eval < alpha - 485 - 281 * depth * depth)
-        return qsearch<NonPV>(pos, ss, alpha, beta);
+    if (!forceDeep)    // --- Tactical Mode: disable razoring at depth <= 7 ---
+    {
+        if (!PvNode && eval < alpha - 485 - 281 * depth * depth)
+            return qsearch<NonPV>(pos, ss, alpha, beta);
+    }
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
@@ -1433,9 +1439,13 @@ if constexpr (!PvNode)
                  + std::abs(correctionValue) / 174665;
         };
 
-        if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
-            && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
-            return (2 * beta + eval) / 3;
+        // --- Tactical Mode: disable futility pruning at depth <= 7 ---
+        if (!forceDeep)
+        {
+            if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
+                && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
+                return (2 * beta + eval) / 3;
+        }
     }
 
     // Step 9. Null move search with verification search
@@ -1606,20 +1616,31 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;
 
+            // --- Tactical Mode: disable LMR below depth 7 ---
+            if (forceDeep)
+                lmrDepth = newDepth;
+
             if (capture || givesCheck)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist = captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
                 // Futility pruning for captures
-                if (!givesCheck && lmrDepth < 7)
-                {
-                    Value futilityValue = ss->staticEval + 232 + 217 * lmrDepth
-                                        + PieceValue[capturedPiece] + 131 * captHist / 1024;
 
-                    if (futilityValue <= alpha)
-                        continue;
+                // --- Tactical Mode: skip futility pruning ---
+                if (!forceDeep)
+                {
+                    if (!givesCheck && lmrDepth < 7)
+                    {
+                        Value futilityValue = ss->staticEval + 232 + 217 * lmrDepth
+                                            + PieceValue[capturedPiece] + 131 * captHist / 1024;
+
+                        if (futilityValue <= alpha)
+                            continue;
+                    }
                 }
+
+            }
 
                 // SEE based pruning for captures and checks
                 // Avoid pruning sacrifices of our last piece for stalemate
@@ -1769,8 +1790,18 @@ moves_loop:  // When in check, search starts here
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()];
 
+        // --- Tactical Mode: prioritize king moves ---
+        if (tactical && type_of(movedPiece) == KING)
+            ss->statScore += 500000;
+
         // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * 850 / 8192;
+        int scoreForReduction = ss->statScore;
+
+        // --- Tactical Mode: king moves should not be penalized by reduction ---
+        if (tactical && type_of(movedPiece) == KING)
+            scoreForReduction = 0;
+
+        r -= scoreForReduction * 850 / 8192;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
