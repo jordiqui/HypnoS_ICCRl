@@ -153,6 +153,13 @@ Range: 1 to 100
 	This is a setup to limit the number of moves that can be played by the experience book.
 	If you configure 16, the engine will only play 16 moves (if available).
 
+  ### Tactical Mode
+
+Default: false
+Enables a more aggressive search profile intended to improve tactical solving.
+This mode selectively reduces or disables pruning and LMR in specific tactical situations, increasing the engine’s sensitivity to forcing moves, sacrifices, and narrow winning lines.
+
+Tactical Mode is designed for problem-solving; it will significantly increase node count and is not recommended for long-time control competitive play.
   ### Variety
 
 Enables randomization of move selection in balanced positions not covered by the opening book.  
@@ -186,6 +193,57 @@ Once the game progresses beyond this ply count, the randomization feature is dis
 - The hard cap is `40`, since variety in late-game scenarios is generally undesirable.
 
 This setting prevents randomness from affecting important endgame decisions. 
+
+
+  ### Random Open Mode
+
+Default: false
+Enables controlled randomization during the opening phase, selecting among near-equal root moves based on a softmax probability distribution.
+
+This feature increases opening variety in self-play, training, and large-scale testing.
+
+Important:
+Random Open Mode does not interfere with Polyglot books nor with the Experience Book (.exp).
+If a book move is available (Polyglot or EXP), the engine plays the book move and completely bypasses Random Open Mode.
+
+  ### Random Open Plies
+
+Default: 16 — Range: 0–20
+Maximum number of plies during which Random Open Mode may be applied.
+Higher values increase opening variety; lower values restrict it to the very early moves.
+
+  ### Random Open MultiPV
+
+Default: 3 — Range: 1–6
+Ensures a minimum MultiPV during the first plies.
+This guarantees a stable pool of alternative moves for the random selector.
+
+  ### Random Open DeltaCp
+
+Default: 25 — Range: 0–100
+Centipawn window used to determine which moves are considered “near-equal” to the best move.
+Only moves within this window can be sampled by Random Open Mode.
+
+  ### Random Open SoftmaxT
+
+Default: 12 — Range: 1–40
+Softmax temperature parameter (in centipawns).
+Controls how strongly the probability distribution favors the top moves.
+
+Low values → more deterministic behavior
+
+High values → more randomness and diversity
+
+  ### Random Seed
+
+Default: 0 — Range: 0–10000
+Controls the reproducibility of the random selection system.
+
+0: non-deterministic (uses system time)
+
+>0: deterministic — identical sequences of random choices for the same position and seed
+
+Useful for debugging, regression testing, or reproducible self-play experiments.
 
   ### NNUE Dynamic Weights
 
