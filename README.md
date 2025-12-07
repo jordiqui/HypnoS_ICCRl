@@ -98,6 +98,19 @@ Recomendaciones rápidas para los controles más habituales. Ajusta los valores 
   mediante la opción `EvalFile` o las rutas por defecto en el directorio de
   trabajo.
 
+### Cómo cargar las redes NNUE sin inflar el binario
+
+- El `Makefile` de `src/` compila con `-DNNUE_EMBEDDING_OFF`, lo que impide
+  incrustar las redes y mantiene el ejecutable en torno a 100 MB. Si se
+  elimina ese macro, el compilador intenta empaquetar los ficheros `.nnue` y
+  el binario puede superar los 2.4 GB.
+- Usa `make net` o `./scripts/net.sh` para descargar `nn-2962dca31855.nnue` y
+  `nn-37f18f62d772.nnue`. Coloca ambos archivos en la misma carpeta que el
+  ejecutable o indica la ruta completa en la opción UCI `EvalFile`.
+- Cambia de una red a otra activando o desactivando `Use Small Network`; si
+  quieres desactivar la evaluación NNUE por completo, apaga `Use_NNUE` en tu
+  GUI UCI.
+
 ## Mejoras realizadas en esta bifurcación
 
 - Documentación reescrita en español, aclarando la licencia GPL y el origen como fork comunitario.
