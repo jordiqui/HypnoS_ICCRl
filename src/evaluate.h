@@ -33,6 +33,8 @@ namespace Eval {
 // for the build process (profile-build and fishtest) to work. Do not change the
 // name of the macro or the location where this macro is defined, as it is used
 // in the Makefile/Fishtest.
+// The big network is pinned to nn-2962dca31855.nnue and should only change
+// when Stockfish releases a newer official build.
 #define EvalFileDefaultNameBig "nn-2962dca31855.nnue"
 #define EvalFileDefaultNameSmall "nn-37f18f62d772.nnue"
 

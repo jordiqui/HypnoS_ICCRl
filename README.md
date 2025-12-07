@@ -57,10 +57,28 @@ A continuación se resumen las opciones más utilizadas del motor. Todas se conf
 2. Activa o desactiva las opciones anteriores según tu escenario: análisis, autoaprendizaje o partidas amistosas.
 3. Para reproducibilidad en pruebas, define un `Random Seed` mayor que cero.
 
+## Red NNUE predeterminada
+
+- El motor usa como red principal ("big NNUE") la **nn-2962dca31855.nnue**, que
+  debe mantenerse salvo que Stockfish publique una versión oficial más
+  reciente. Ajusta `EvalFile` si necesitas cargarla desde otra ruta, pero no
+  cambies el nombre de referencia.
+- La red compacta **nn-37f18f62d772.nnue** sigue siendo la opción secundaria
+  para dispositivos con menos memoria. Puedes alternar entre ambas con la
+  opción `Use Small Network` en la GUI o deshabilitando `Use_NNUE` si fuera
+  necesario.
+- Por política del repositorio no se distribuyen binarios: descarga ambas
+  redes con `make net` o ejecutando `./scripts/net.sh`. El script verifica el
+  hash esperado y solo mantiene las redes válidas en tu carpeta de trabajo.
+- Las redes no se incrustan en el binario; el motor las carga desde disco
+  mediante la opción `EvalFile` o las rutas por defecto en el directorio de
+  trabajo.
+
 ## Mejoras realizadas en esta bifurcación
 
 - Documentación reescrita en español, aclarando la licencia GPL y el origen como fork comunitario.
 - Agradecimientos explícitos al autor de Hypnos y a los proyectos base.
 - Resumen consolidado de las opciones UCI y su propósito.
+- Ajustes de mantenimiento: correcciones en el sistema de construcción, selección aleatoria segura en la política de aperturas y alineación de las redes NNUE por defecto con la principal de Stockfish.
 
 Seguiremos añadiendo y documentando nuevas mejoras en cuanto estén listas.
