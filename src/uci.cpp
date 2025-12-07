@@ -150,7 +150,7 @@ void UCIEngine::init_search_update_listeners() {
     engine.set_on_iter([](const auto& i) { on_iter(i); });
     engine.set_on_update_no_moves([](const auto& i) { on_update_no_moves(i); });
     engine.set_on_update_full(
-      [this](const auto& i) { on_update_full(i); });
+      [](const auto& i) { on_update_full(i); });
     engine.set_on_bestmove([](const auto& bm, const auto& p) { on_bestmove(bm, p); });
     engine.set_on_verify_networks([](const auto& s) { print_info_string(s); });
 }
