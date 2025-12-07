@@ -169,10 +169,6 @@ std::string engine_version_info() {
     }
 
 
-#ifdef ARCH_LABEL
-    ss << " [" << ARCH_LABEL << "]";
-#endif
-
     return ss.str();
 }
 
