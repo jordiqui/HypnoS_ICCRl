@@ -23,6 +23,10 @@ validate_network() {
       return 1
     fi
   fi
+
+  # If the file exists and the hash matches (or we cannot validate), report
+  # success so callers do not loop forever attempting a re-download.
+  return 0
 }
 
 fetch_network() {

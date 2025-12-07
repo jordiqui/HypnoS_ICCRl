@@ -31,5 +31,5 @@
 *.out
 *.app
 
-# NNUE network weights
+# NNUE network weights (downloaded locally; not tracked in the repo)
 *.nnue
