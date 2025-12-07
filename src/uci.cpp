@@ -65,7 +65,7 @@ namespace {
 
         std::string current = std::string(opts["Experience File"]);
         if (current.empty())
-            current = "Hypnos.exp";
+            current = "Hypnos-IJCCRL-071225.exp";
 
         std::filesystem::path p(current);
         if (p.is_relative())
@@ -269,7 +269,7 @@ void UCIEngine::loop() {
         }
         else if (token == "--help" || token == "help" || token == "--license" || token == "license")
             sync_cout
-              << "\nHypnos is a powerful chess engine for playing and analyzing."
+              << "\nHypnos-IJCCRL-071225 is a powerful chess engine for playing and analyzing."
                  "\nIt is released as free software licensed under the GNU GPLv3 License."
                  "\nHypnos is normally used with a graphical user interface (GUI) and implements"
                  "\nthe Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc."

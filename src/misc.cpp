@@ -41,7 +41,12 @@ namespace Hypnos {
 namespace {
 
 // Version number or dev.
+codex/apply-latest-patch-of-stockfish
 constexpr std::string_view version = "dev-20251203-c109a88e";
+=======
+constexpr std::string_view engineName = "Hypnos-IJCCRL-071225";
+constexpr std::string_view version    = " ";
+ master
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -114,20 +119,20 @@ class Logger {
 }  // namespace
 
 
-// Returns the full name of the current HypnoS version.
+// Returns the full name of the current Hypnos-IJCCRL-071225 version.
 //
 // For local dev compiles we try to append the commit SHA and
 // commit date from git. If that fails only the local compilation
 // date is set and "nogit" is specified:
-//      HypnoS dev-YYYYMMDD-SHA
+//      Hypnos-IJCCRL-071225 dev-YYYYMMDD-SHA
 //      or
-//      HypnoS dev-YYYYMMDD-nogit
+//      Hypnos-IJCCRL-071225 dev-YYYYMMDD-nogit
 //
 // For releases (non-dev builds) we only include the version number:
-//      HypnoS version
+//      Hypnos-IJCCRL-071225 version
 std::string engine_version_info() {
     std::stringstream ss;
-    ss << "HypnoS " << version << std::setfill('0');
+    ss << engineName << " " << version << std::setfill('0');
 
     if constexpr (version == "dev")
     {
@@ -153,6 +158,11 @@ std::string engine_version_info() {
         ss << "nogit";
 #endif
     }
+
+    
+#ifdef ARCH_LABEL
+    ss << " [" << ARCH_LABEL << "]";
+#endif
 
     return ss.str();
 }

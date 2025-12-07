@@ -211,7 +211,7 @@ Engine::Engine(std::optional<std::string> path) :
                 }));
 
     options.add("Experience File",
-                Option("Hypnos.exp", [](const Option& opt) {
+                Option("Hypnos-IJCCRL-071225.exp", [](const Option& opt) {
                     on_exp_file(opt);
                     return std::nullopt;
                 }));
