@@ -19,6 +19,9 @@
 ### Section 1. General Configuration
 ### ==========================================================================
 
+### Default evaluation network
+EVALFILE ?= nn-2962dca31855.nnue
+
 ### Establish the operating system name
 KERNEL := $(shell uname -s)
 ifeq ($(KERNEL),Linux)

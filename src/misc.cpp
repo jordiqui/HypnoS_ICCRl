@@ -41,8 +41,12 @@ namespace Hypnos {
 namespace {
 
 // Version number or dev.
+codex/apply-latest-patch-of-stockfish
+constexpr std::string_view version = "dev-20251203-c109a88e";
+=======
 constexpr std::string_view engineName = "Hypnos-IJCCRL-071225";
 constexpr std::string_view version    = " ";
+ master
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
