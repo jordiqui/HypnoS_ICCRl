@@ -1,5 +1,12 @@
 #!/bin/sh
 
+set -e
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SRC_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../src" && pwd)
+
+cd "$SRC_DIR"
+
 wget_or_curl=$( (command -v wget > /dev/null 2>&1 && echo "wget -qO-") || \
                 (command -v curl > /dev/null 2>&1 && echo "curl -skL"))
 

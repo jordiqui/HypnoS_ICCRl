@@ -21,10 +21,7 @@
 
 ### Default evaluation network
 EVALFILE ?= nn-2962dca31855.nnue
-
-# Disable NNUE embedding so binaries load networks from disk; repository
-# policy keeps network weights untracked.
-CXXFLAGS += -DNNUE_EMBEDDING_OFF
+EVALFILE_SMALL ?= nn-37f18f62d772.nnue
 
 ### Establish the operating system name
 KERNEL := $(shell uname -s)
@@ -75,6 +72,7 @@ HEADERS = benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.h history.
           opening_policy.h
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
+NNUE_FILES = $(EVALFILE) $(EVALFILE_SMALL)
 
 VPATH = syzygy:nnue:nnue/features
 
@@ -1076,7 +1074,10 @@ profileclean:
 
 # evaluation network (nnue)
 net:
-	@$(SHELL) ../scripts/net.sh
+        @$(SHELL) ../scripts/net.sh
+
+$(NNUE_FILES):
+        @$(SHELL) ../scripts/net.sh
 
 format:
 	$(CLANG-FORMAT) -i $(SRCS) $(HEADERS) -style=file
@@ -1155,7 +1156,7 @@ config-sanity:
 	 test "$(comp)" = "clang" || test "$(comp)" = "armv7a-linux-androideabi16-clang" || \
 	 test "$(comp)" = "aarch64-linux-android21-clang")
 
-$(EXE): $(OBJS)
+$(EXE): $(NNUE_FILES) $(OBJS)
 	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 # Force recompilation to ensure version info is up-to-date

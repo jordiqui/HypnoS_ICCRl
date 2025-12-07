@@ -83,33 +83,26 @@ Recomendaciones rápidas para los controles más habituales. Ajusta los valores 
 
 ## Red NNUE predeterminada
 
-- El motor usa como red principal ("big NNUE") la **nn-2962dca31855.nnue**, que
-  debe mantenerse salvo que Stockfish publique una versión oficial más
-  reciente. Ajusta `EvalFile` si necesitas cargarla desde otra ruta, pero no
-  cambies el nombre de referencia.
-- La red compacta **nn-37f18f62d772.nnue** sigue siendo la opción secundaria
-  para dispositivos con menos memoria. Puedes alternar entre ambas con la
-  opción `Use Small Network` en la GUI o deshabilitando `Use_NNUE` si fuera
-  necesario.
-- Por política del repositorio no se distribuyen binarios: descarga ambas
-  redes con `make net` o ejecutando `./scripts/net.sh`. El script verifica el
-  hash esperado y solo mantiene las redes válidas en tu carpeta de trabajo.
-- Las redes no se incrustan en el binario; el motor las carga desde disco
-  mediante la opción `EvalFile` o las rutas por defecto en el directorio de
-  trabajo.
+- El motor empaqueta por defecto la red principal ("big NNUE") **nn-2962dca31855.nnue**
+  y la red compacta **nn-37f18f62d772.nnue** dentro del binario, siguiendo el
+  mismo flujo de trabajo que en nuestros proyectos Revolution y Deepalienist.
+  Las redes se descargan automáticamente al compilar (`make` invoca el objetivo
+  `net` que valida los hashes) y quedan accesibles sin necesidad de ficheros
+  externos al ejecutar el motor.
+- Puedes alternar entre ambas redes con la opción `Use Small Network` o
+  desactivar la evaluación NNUE con `Use_NNUE`; `EvalFile` sigue permitiendo
+  cargar manualmente una red diferente si necesitas pruebas específicas.
 
-### Cómo cargar las redes NNUE sin inflar el binario
+### Cómo usar las redes NNUE integradas
 
-- El `Makefile` de `src/` compila con `-DNNUE_EMBEDDING_OFF`, lo que impide
-  incrustar las redes y mantiene el ejecutable en torno a 100 MB. Si se
-  elimina ese macro, el compilador intenta empaquetar los ficheros `.nnue` y
-  el binario puede superar los 2.4 GB.
-- Usa `make net` o `./scripts/net.sh` para descargar `nn-2962dca31855.nnue` y
-  `nn-37f18f62d772.nnue`. Coloca ambos archivos en la misma carpeta que el
-  ejecutable o indica la ruta completa en la opción UCI `EvalFile`.
-- Cambia de una red a otra activando o desactivando `Use Small Network`; si
-  quieres desactivar la evaluación NNUE por completo, apaga `Use_NNUE` en tu
-  GUI UCI.
+- Al estar incrustadas, no es necesario copiar las redes junto al ejecutable;
+  el binario resultante incorpora los pesos y está listo para ejecutarse en
+  cualquier carpeta.
+- Si deseas mantener un ejecutable más ligero, compila con
+  `CXXFLAGS+=' -DNNUE_EMBEDDING_OFF'` para volver al modo de carga desde disco.
+- Usa `make net` o `./scripts/net.sh` para refrescar los ficheros `.nnue` que
+  se van a incrustar; el `Makefile` descargará automáticamente las redes si no
+  están presentes al iniciar la compilación.
 
 ## Mejoras realizadas en esta bifurcación
 
