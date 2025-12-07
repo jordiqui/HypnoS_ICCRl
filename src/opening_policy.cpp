@@ -190,7 +190,7 @@ Move probe(const Position& pos) {
     if (total <= 0)
         return Move::none();
 
-    int pick = policyRng.rand<int>(total);
+    int pick = static_cast<int>(policyRng.rand<unsigned>() % total);
     for (const auto& e : entries)
     {
         pick -= e.weight;
