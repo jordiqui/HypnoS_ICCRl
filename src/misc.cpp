@@ -41,7 +41,7 @@ namespace Hypnos {
 namespace {
 
 // Version number or dev.
-constexpr std::string_view version = " ";
+constexpr std::string_view version = "dev-20251203-c109a88e";
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
