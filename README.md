@@ -61,7 +61,7 @@ A quick overview of the most relevant settings (configure them through your pref
 
 ## Settings
 
-Recomendaciones rápidas para los controles más habituales. Ajusta los valores en tu GUI UCI siguiendo cada perfil de tiempo:
+Recomendaciones rápidas para los controles más habituales. Ajusta los valores en tu GUI UCI siguiendo cada perfil de tiempo. Los valores por defecto de gestión de tiempo son **Slow Mover = 80** y **Minimum Thinking Time = 20 ms**:
 
 | Opción clave | Bullet (1+0 / 2+1) | Blitz (3+2 / 5+3) | Classical (120+15) |
 | --- | --- | --- | --- |
@@ -71,6 +71,7 @@ Recomendaciones rápidas para los controles más habituales. Ajusta los valores 
 | **Random Open Mode** (`Random Open Plies / MultiPV / DeltaCp / SoftmaxT`) | 6 / 3 / 25 / 120 para mezclar aperturas | 4 / 2 / 20 / 80 | 0 / 1 / 0 / 0 (juego sólido) |
 | **Experience file** | Activado, tamaño pequeño (p. ej. 64–128 MB) | Activado, tamaño medio (256–512 MB) | Activado, tamaño amplio (1024 MB+) |
 | **Book1 / Book2** | Book1 ligero con `BestBookMove` desactivado | Book1 sólido y Book2 opcional, `BestBookMove` activado | Libros completos, `BestBookMove` activado |
+| **Slow Mover / Minimum Thinking Time** | Slow Mover 60, Minimum Thinking Time 10–15 ms para evitar apuros | Slow Mover 80 (por defecto), Minimum Thinking Time 20 ms | Slow Mover 100 para gastar más tiempo, Minimum Thinking Time 30 ms |
 | **NNUE Dynamic Weights** | Activado | Activado | Activado |
 | **NNUE StrategyMaterialWeight / PositionalWeight** | 0 / 0 (predeterminado) | +4 / +2 para equilibrar | +8 / +6 para partidas largas |
 | **Random Seed** | Valor fijo para reproducibilidad de tests | Valor fijo | Valor fijo |
