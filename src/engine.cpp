@@ -174,6 +174,9 @@ Engine::Engine(std::optional<std::string> path) :
 
     options.add("SyzygyProbeLimit", Option(7, 0, 7));
 
+    options.add("Opening Policy", Option(true));
+    options.add("Opening Policy Depth", Option(16, 1, 40));
+
     options.add("Book1", Option(false));
 
     options.add("Book1 File", Option("", [](const Option& o) {

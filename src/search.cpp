@@ -37,6 +37,7 @@
 #if defined(HYP_FIXED_ZOBRIST)
 #include "experience.h"
 #endif
+#include "opening_policy.h"
 
 #include "uci.h"    // for UCI::value / UCI::move nelle info
 #include "misc.h"   // for Utility::is_game_decided(...)
@@ -318,8 +319,14 @@ void Search::Worker::start_searching() {
     {
         if (!limits.infinite && !limits.mate)
         {
+            // Built-in policy book with aggressive/solid replies to 1.e4 and 1.d4
+            if ((bool) options["Opening Policy"]
+                && rootPos.game_ply() / 2 < (int) options["Opening Policy Depth"])
+                bookMove = OpeningPolicy::probe(rootPos);
+
             // Polyglot Book 1
-            if ((bool) options["Book1"] && rootPos.game_ply() / 2 < (int) options["Book1 Depth"])
+            if (bookMove == Move::none() && (bool) options["Book1"]
+                && rootPos.game_ply() / 2 < (int) options["Book1 Depth"])
                 bookMove = polybook[0].probe(rootPos,
                                              (bool) options["Book1 BestBookMove"],
                                              (int) options["Book1 Width"]);

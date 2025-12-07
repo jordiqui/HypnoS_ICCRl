@@ -53,10 +53,10 @@ PGOBENCH = $(WINE_PATH) ./$(EXE) bench
 
 ### Source and object files
 SRCS = benchmark.cpp bitboard.cpp evaluate.cpp experience.cpp main.cpp \
-	misc.cpp movegen.cpp movepick.cpp polybook.cpp position.cpp \
-	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
-	nnue/nnue_accumulator.cpp nnue/nnue_misc.cpp nnue/network.cpp \
-	nnue/features/half_ka_v2_hm.cpp nnue/features/full_threats.cpp \
+	misc.cpp movegen.cpp movepick.cpp opening_policy.cpp polybook.cpp position.cpp \\
+	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \\
+	nnue/nnue_accumulator.cpp nnue/nnue_misc.cpp nnue/network.cpp \\
+	nnue/features/half_ka_v2_hm.cpp nnue/features/full_threats.cpp \\
 	engine.cpp score.cpp memory.cpp eval_weights.cpp dyn_gate.cpp
 
 HEADERS = benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.h history.h \
@@ -66,7 +66,8 @@ HEADERS = benchmark.h bitboard.h evaluate.h misc.h movegen.h movepick.h history.
 		nnue/nnue_architecture.h nnue/nnue_common.h nnue/nnue_feature_transformer.h nnue/simd.h \
 		position.h search.h syzygy/tbprobe.h thread.h thread_win32_osx.h timeman.h \
 		tt.h tune.h types.h uci.h ucioption.h perft.h nnue/network.h engine.h score.h numa.h memory.h \
-		experience.h hypnos_zobrist.h experience_compat.h eval_weights.h dyn_gate.h
+	experience.h hypnos_zobrist.h experience_compat.h eval_weights.h dyn_gate.h \\
+	opening_policy.h
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
@@ -1010,17 +1011,17 @@ clean: objclean profileclean
 
 # clean binaries and objects
 objclean:
-        @rm -f $(ENGINE_NAME)-* $(ENGINE_NAME)-*.exe *.o ./syzygy/*.o ./nnue/*.o ./nnue/features/*.o
+	@rm -f $(ENGINE_NAME)-* $(ENGINE_NAME)-*.exe *.o ./syzygy/*.o ./nnue/*.o ./nnue/features/*.o
 
 # clean auxiliary profiling files
 profileclean:
-        @rm -rf profdir
-        @rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s PGOBENCH.out
-        @rm -f $(ENGINE_NAME).profdata *.profraw
-        @rm -f $(ENGINE_NAME).*args*
-        @rm -f $(ENGINE_NAME).*lt*
-        @rm -f $(ENGINE_NAME).res
-        @rm -f ./-lstdc++.res
+	@rm -rf profdir
+	@rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s PGOBENCH.out
+	@rm -f $(ENGINE_NAME).profdata *.profraw
+	@rm -f $(ENGINE_NAME).*args*
+	@rm -f $(ENGINE_NAME).*lt*
+	@rm -f $(ENGINE_NAME).res
+	@rm -f ./-lstdc++.res
 
 # evaluation network (nnue)
 net:
@@ -1117,11 +1118,11 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-        $(XCRUN) $(LLVM_PROFDATA) merge -output=$(ENGINE_NAME).profdata *.profraw
-        $(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-        EXTRACXXFLAGS='-fprofile-use=$(ENGINE_NAME).profdata' \
-        EXTRALDFLAGS='-fprofile-use ' \
-        all
+	$(XCRUN) $(LLVM_PROFDATA) merge -output=$(ENGINE_NAME).profdata *.profraw
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-use=$(ENGINE_NAME).profdata' \
+	EXTRALDFLAGS='-fprofile-use ' \
+	all
 
 gcc-profile-make:
 	@mkdir -p profdir
@@ -1132,11 +1133,11 @@ gcc-profile-make:
 	all
 
 gcc-profile-use:
-        $(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-        EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
-        EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
-        EXTRALDFLAGS='-lgcov' \
-        all
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
+	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
+	EXTRALDFLAGS='-lgcov' \
+	all
 
 icx-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
@@ -1145,11 +1146,11 @@ icx-profile-make:
 	all
 
 icx-profile-use:
-        $(XCRUN) $(LLVM_PROFDATA) merge -output=$(ENGINE_NAME).profdata *.profraw
-        $(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-        EXTRACXXFLAGS='-fprofile-instr-use=$(ENGINE_NAME).profdata' \
-        EXTRALDFLAGS='-fprofile-use ' \
-        all
+	$(XCRUN) $(LLVM_PROFDATA) merge -output=$(ENGINE_NAME).profdata *.profraw
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-fprofile-instr-use=$(ENGINE_NAME).profdata' \
+	EXTRALDFLAGS='-fprofile-use ' \
+	all
 
 .depend: $(SRCS)
 	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
