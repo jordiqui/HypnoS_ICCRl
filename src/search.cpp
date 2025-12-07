@@ -1626,6 +1626,14 @@ moves_loop:  // When in check, search starts here
                 Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist = captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
 
+                // When the game is balanced, be stricter with speculative
+                // sacrifices unless there is a clear tactical justification.
+                if (std::abs(ss->staticEval) < 120
+                    && std::abs(pos.non_pawn_material(us) - pos.non_pawn_material(~us)) < 2 * PawnValue)
+                {
+                    r += 178;  // reduce later pruning to examine safe trades deeper
+                }
+
                 // Futility pruning for captures
 
                 // --- Tactical Mode: skip futility pruning ---
@@ -1644,6 +1652,20 @@ moves_loop:  // When in check, search starts here
                 // SEE based pruning for captures and checks
                 // Avoid pruning sacrifices of our last piece for stalemate
                 int margin = std::max(166 * depth + captHist / 29, 0);
+
+                if (std::abs(ss->staticEval) < 120
+                    && std::abs(pos.non_pawn_material(us) - pos.non_pawn_material(~us)) < 2 * PawnValue
+                    && pos.game_ply() < 70)
+                {
+                    margin = std::max(0, margin - 180);
+                    if (!givesCheck)
+                        margin = std::max(0, margin - 120);
+                }
+
+                const bool losingExchange = !pos.see_ge(move, 0);
+                if (losingExchange && depth < 10 && !givesCheck && !pos.see_ge(move, PawnValue / 2))
+                    continue;
+
                 if ((alpha >= VALUE_DRAW || pos.non_pawn_material(us) != PieceValue[movedPiece])
                     && !pos.see_ge(move, -margin))
                     continue;

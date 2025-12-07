@@ -19,6 +19,7 @@
 #include "movepick.h"
 
 #include <cassert>
+#include <cstdlib>
 #include <limits>
 #include <utility>
 
@@ -152,8 +153,21 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         const Piece     capturedPiece = pos.piece_on(to);
 
         if constexpr (Type == CAPTURES)
+        {
             m.value = (*captureHistory)[pc][to][type_of(capturedPiece)]
                     + 7 * int(PieceValue[capturedPiece]);
+
+            const Value npmBalance = pos.non_pawn_material(us) - pos.non_pawn_material(~us);
+            const bool  symmetric  = std::abs(npmBalance) < PawnValue / 2
+                                    && pos.count<PAWN>(us) == pos.count<PAWN>(~us);
+
+            if (symmetric)
+            {
+                const int exchangeGap = std::abs(PieceValue[capturedPiece] - PieceValue[pt]);
+                if (exchangeGap <= PawnValue)
+                    m.value += 256 - 2 * exchangeGap;  // prefer gentle simplifications
+            }
+        }
 
         else if constexpr (Type == QUIETS)
         {
