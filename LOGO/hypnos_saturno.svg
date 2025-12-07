@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">Hypnos logo inspired by Goya's Saturn</title>
+  <desc id="desc">Dark silhouette devouring a crimson orb before a ringed planet.</desc>
+  <defs>
+    <linearGradient id="ring" x1="0%" y1="40%" x2="100%" y2="60%">
+      <stop offset="0%" stop-color="#f6c97c" stop-opacity="0.85" />
+      <stop offset="40%" stop-color="#d64b33" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#5a1d18" stop-opacity="0.95" />
+    </linearGradient>
+    <radialGradient id="planet" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#2f2f4a" />
+      <stop offset="60%" stop-color="#1b1b2d" />
+      <stop offset="100%" stop-color="#0f0f1b" />
+    </radialGradient>
+  </defs>
+  <rect width="640" height="640" fill="#0a0a12" />
+  <ellipse cx="320" cy="320" rx="220" ry="78" fill="#22110d" opacity="0.7" />
+  <ellipse cx="320" cy="320" rx="210" ry="70" fill="url(#ring)" transform="rotate(-10 320 320)" />
+  <circle cx="320" cy="320" r="155" fill="url(#planet)" />
+  <circle cx="320" cy="320" r="120" fill="#2e2e46" opacity="0.8" />
+  <circle cx="320" cy="320" r="90" fill="#a42821" opacity="0.8" />
+  <g stroke="#5a1a14" stroke-width="8" fill="#0c0c18" transform="translate(0,-15)">
+    <path d="M210 420 C180 340 200 260 260 200 C320 140 410 160 430 220 C450 280 420 330 400 370 C390 400 380 450 320 470 C260 490 230 460 210 420 Z" />
+  </g>
+  <circle cx="400" cy="305" r="34" fill="#e04f3b" stroke="#5a1a14" stroke-width="6" />
+  <circle cx="396" cy="299" r="20" fill="#f6c7a4" opacity="0.9" />
+  <path d="M240 470 Q320 510 400 470" fill="none" stroke="#d1b078" stroke-width="3" opacity="0.7" />
+  <path d="M240 445 Q320 485 420 440" fill="none" stroke="#f1e0c1" stroke-width="2" opacity="0.6" />
+  <path d="M190 340 Q220 300 260 290" fill="none" stroke="#7a231b" stroke-width="4" opacity="0.8" />
+</svg>
