@@ -59,6 +59,22 @@ A quick overview of the most relevant settings (configure them through your pref
 - **NNUE ManualWeights**: anula el modo dinámico y fija manualmente los pesos con `NNUE StrategyMaterialWeight` y `NNUE StrategyPositionalWeight`.
 - **(Debug) NNUE Log Weights**: registra los parámetros usados en la raíz de la búsqueda.
 
+## Settings
+
+Recomendaciones rápidas para los controles más habituales. Ajusta los valores en tu GUI UCI siguiendo cada perfil de tiempo:
+
+| Opción clave | Bullet (1+0 / 2+1) | Blitz (3+2 / 5+3) | Classical (120+15) |
+| --- | --- | --- | --- |
+| **Depth / Width** | Depth 24–28, Width 2 | Depth 30–34, Width 3–4 | Depth 36–42, Width 5–6 |
+| **Tactical Mode** | Activado para encontrar tácticas rápidas | Activado solo en posiciones complejas | Desactivado para evitar consumo extra |
+| **Variety / Max Score / Max Moves** | Variety 20, Max Score 15, Max Moves 4 para evitar repetición | Variety 10, Max Score 10, Max Moves 3 | Variety 0 (determinista) |
+| **Random Open Mode** (`Random Open Plies / MultiPV / DeltaCp / SoftmaxT`) | 6 / 3 / 25 / 120 para mezclar aperturas | 4 / 2 / 20 / 80 | 0 / 1 / 0 / 0 (juego sólido) |
+| **Experience file** | Activado, tamaño pequeño (p. ej. 64–128 MB) | Activado, tamaño medio (256–512 MB) | Activado, tamaño amplio (1024 MB+) |
+| **Book1 / Book2** | Book1 ligero con `BestBookMove` desactivado | Book1 sólido y Book2 opcional, `BestBookMove` activado | Libros completos, `BestBookMove` activado |
+| **NNUE Dynamic Weights** | Activado | Activado | Activado |
+| **NNUE StrategyMaterialWeight / PositionalWeight** | 64 / 64 (predeterminado) | 80 / 72 para equilibrar | 96 / 80 para partidas largas |
+| **Random Seed** | Valor fijo para reproducibilidad de tests | Valor fijo | Valor fijo |
+
 ## Cómo usar el motor
 
 1. Descarga o compila el binario y cárgalo en tu GUI UCI favorita.
@@ -90,6 +106,3 @@ A quick overview of the most relevant settings (configure them through your pref
 - Ajustes de mantenimiento: correcciones en el sistema de construcción, selección aleatoria segura en la política de aperturas y alineación de las redes NNUE por defecto con la principal de Stockfish.
 
 Seguiremos añadiendo y documentando nuevas mejoras en cuanto estén listas.
-=======
-We will continue to add and document improvements as they become available.
-master
