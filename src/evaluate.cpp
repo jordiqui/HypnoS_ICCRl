@@ -40,6 +40,83 @@
 
 namespace Hypnos {
 
+namespace {
+
+// Estimate how many minor pieces have left their home squares. This is used as
+// a coarse proxy for development/initiative when applying handcrafted
+// structural penalties.
+int developed_minors(const Position& pos, Color c) {
+    int developed = 0;
+
+    const Bitboard knights = pos.pieces(c, KNIGHT);
+    const Bitboard bishops = pos.pieces(c, BISHOP);
+
+    if (c == WHITE)
+    {
+        developed += !(knights & SQ_B1);
+        developed += !(knights & SQ_G1);
+        developed += !(bishops & SQ_C1);
+        developed += !(bishops & SQ_F1);
+    }
+    else
+    {
+        developed += !(knights & SQ_B8);
+        developed += !(knights & SQ_G8);
+        developed += !(bishops & SQ_C8);
+        developed += !(bishops & SQ_F8);
+    }
+
+    return developed;
+}
+
+// Penalize early structural concessions by Black (doubled/isolated pawns)
+// unless there is an evident lead in development/initiative.
+int early_black_pawn_penalty(const Position& pos) {
+    Bitboard pawns = pos.pieces(BLACK, PAWN);
+    if (!pawns)
+        return 0;
+
+    // Focus on the early game where long-term pawn weaknesses hurt most.
+    const int earlyFactor = std::clamp(32 - pos.game_ply(), 0, 24);
+    if (!earlyFactor)
+        return 0;
+
+    const Bitboard allBlackPawns = pawns;
+    int            penalty       = 0;
+
+    while (pawns)
+    {
+        const Square sq    = pop_lsb(pawns);
+        const File   file  = file_of(sq);
+        Bitboard     adj   = 0;
+
+        if (file > FILE_A)
+            adj |= file_bb(File(file - 1));
+        if (file < FILE_H)
+            adj |= file_bb(File(file + 1));
+
+        const bool isolated = !(allBlackPawns & adj);
+        const int  pawnsOnFile = popcount(allBlackPawns & file_bb(file));
+        const bool doubled     = pawnsOnFile > 1;
+
+        if (isolated)
+            penalty += 14;
+        if (doubled)
+            penalty += 10;
+    }
+
+    // Reward clear signs of activity as compensation.
+    const int devLead = developed_minors(pos, BLACK) - developed_minors(pos, WHITE)
+                      + (pos.side_to_move() == BLACK);
+
+    int scaledPenalty = penalty * (8 + earlyFactor) / 8;
+    scaledPenalty -= std::max(0, devLead) * 6;
+
+    return std::max(0, scaledPenalty);
+}
+
+}  // namespace
+
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the side to move. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
@@ -182,6 +259,13 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // 'material' already computed above
     int v        = (nnue * (77871 + material) + optimism * (7191 + material)) / 77871;
+
+    // Hand-crafted guardrails for speculative structures not fully captured by
+    // the nets: discourage early Black pawn weaknesses without visible
+    // compensation in development/initiative.
+    const int blackStructuralPenalty = early_black_pawn_penalty(pos);
+    if (blackStructuralPenalty)
+        v += pos.side_to_move() == WHITE ? blackStructuralPenalty : -blackStructuralPenalty;
 
     // Damp down the evaluation linearly when shuffling
     v -= v * pos.rule50_count() / 199;
