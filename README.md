@@ -1,44 +1,52 @@
 <p align="center">
-  <img src="http://outskirts.altervista.org/forum/ext/dmzx/imageupload/img-files/2/ca292f8/8585091/34788e79c6bbe7cf7bb578c6fb4d11f8.jpg" alt="Hypnos logo">
+  <img src="./LOGO/hypnos_saturno.svg" alt="Hypnos logo inspired by Goya's Saturn" width="320">
 </p>
 
-<h1 align="center">Hypnos - Fork comunitario IJCCRL</h1>
+<h1 align="center">Hypnos - IJCCRL Community Fork</h1>
 
-## Aviso sobre licencia y procedencia
+Hypnos is a Stockfish-derived UCI chess engine with IJCCRL customisations. This community fork is maintained by **Jorge Ruiz Centelles and Codex Open IA**, keeping the code open and traceable for engine testers and chess enthusiasts.
 
-Este proyecto es un **fork permitido bajo la licencia GNU GPLv3** del motor Hypnos (derivado de Stockfish). El código fuente de Hypnos es libre y, de acuerdo con la licencia, cualquiera puede estudiarlo, modificarlo y redistribuirlo; por ello hemos creado esta versión mantenida por **Jorge Ruiz Centelles y Codex Open IA**. Toda la obra sigue amparada por la [GPLv3](./LICENSE), y las aportaciones que añadamos permanecerán bajo la misma licencia para respetar el espíritu de software libre.
+## About
 
-## Propósito de esta versión
+- Project site: <https://ijccrl.com/>
+- License: [GNU GPLv3](./LICENSE). Hypnos is free software; you may study, modify, and redistribute it as long as the license is preserved.
 
-Nuestro objetivo es mantener un motor UCI sólido y transparente, documentando claramente las posibilidades de uso y las funciones avanzadas que hereda de Hypnos:
+## Purpose of this fork
 
-- Motor libre y fuerte para análisis y juego automatizado de ajedrez.
-- Compatible con cualquier interfaz gráfica UCI (GUI); el propio motor no incluye tablero ni gestor de partidas.
-- Basado en Stockfish, con divergencias estructurales y un sistema de aprendizaje personalizado heredado de Hypnos.
+We aim to keep a strong and transparent UCI engine while documenting the unique features inherited from Hypnos:
 
-## Créditos y agradecimientos
+- Competitive analysis strength suitable for automated play and tournament testing.
+- Compatible with any UCI graphical interface (the engine itself does not include a board or game manager).
+- Structural deviations from Stockfish plus a personalised learning system derived from Hypnos.
 
-- Gracias al autor y mantenedores originales de **Hypnos**, cuyo trabajo hace posible esta bifurcación.
-- Reconocimiento al equipo de **Stockfish** por el motor base y su apertura a la comunidad.
-- Agradecimiento a **Andrew Grant** por la plataforma [OpenBench](https://github.com/AndyGrant/OpenBench), empleada para pruebas SPRT distribuidas.
+## Core UCI options
 
-## Opciones UCI principales
+A quick overview of the most relevant settings (configure them through your preferred UCI GUI):
 
-A continuación se resumen las opciones más utilizadas del motor. Todas se configuran desde la GUI UCI de tu preferencia.
+- **Book1 / Book2**: enable external opening books and set their paths (`Book1 File`, `Book2 File`).
+- **BestBookMove**: restricts the choice to the strongest book move.
+- **Depth / Width**: maximum search depth (1–350) and number of candidate moves (1–10).
+- **Experience file**: records positions and moves for reuse as an experience book; supports de-duplication and read-only mode.
+- **Tactical Mode**: aggressive search profile with fewer prunings—expect higher node counts and a tactical bias.
+- **Variety / Variety Max Score / Variety Max Moves**: adds controlled randomness in balanced positions with evaluation and move-count limits.
+- **Random Open Mode**: probabilistic selection among strong opening moves; configure with `Random Open Plies`, `Random Open MultiPV`, `Random Open DeltaCp`, `Random Open SoftmaxT`, and `Random Seed` for reproducibility.
+- **NNUE Dynamic Weights**: blends wMat/wPos depending on game phase and positional complexity.
+- **NNUE ManualWeights**: override the dynamic mode with manual weights via `NNUE StrategyMaterialWeight` and `NNUE StrategyPositionalWeight`.
+- **(Debug) NNUE Log Weights**: logs the weight parameters used at the search root.
 
-### Libros de apertura
+## How to use the engine
 
-- **Book1 / Book2**: habilita cada libro externo y define su ruta (`Book1 File`, `Book2 File`).
-- **BestBookMove**: limita la selección al mejor movimiento del libro.
-- **Depth / Width**: controlan profundidad máxima (1–350) y número de jugadas candidatas (1–10).
+1. Download or compile the binary and load it into your favourite UCI GUI.
+2. Toggle the options above according to your scenario: deep analysis, self-learning, or friendly games.
+3. For reproducible testing, set a non-zero `Random Seed`.
 
-### Autoaprendizaje y experiencia
+## Improvements documented in this fork
 
-- **Experience file**: el motor registra posiciones y movimientos para reutilizarlos como libro de experiencia.
-- **Fragmentación**: las posiciones duplicadas se consolidan en memoria para evitar datos redundantes.
-- **Experience Readonly**: sólo lectura del archivo de experiencia.
-- **Experience Book / Width / Eval Importance / Min Depth / Max Moves**: convierten la experiencia en libro de juego, ponderando evaluación frente a frecuencia, estableciendo profundidad mínima y límite de jugadas.
+- Rewritten documentation in English with clear licensing and project provenance.
+- Explicit acknowledgements to the original Hypnos author, the Stockfish project, and Andrew Grant's [OpenBench](https://github.com/AndyGrant/OpenBench) used for distributed SPRT testing.
+- Consolidated summary of UCI options and their goals.
 
+ codex/fix-code-errors-and-update-principal-page-d3j84w
 ### Modos de búsqueda
 
 - **Tactical Mode**: perfil agresivo con menos podas para resolver táctica; aumenta el número de nodos y no se recomienda para controles largos.
@@ -82,3 +90,6 @@ A continuación se resumen las opciones más utilizadas del motor. Todas se conf
 - Ajustes de mantenimiento: correcciones en el sistema de construcción, selección aleatoria segura en la política de aperturas y alineación de las redes NNUE por defecto con la principal de Stockfish.
 
 Seguiremos añadiendo y documentando nuevas mejoras en cuanto estén listas.
+=======
+We will continue to add and document improvements as they become available.
+master
