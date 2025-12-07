@@ -1,287 +1,66 @@
 <p align="center">
-  <img src="http://outskirts.altervista.org/forum/ext/dmzx/imageupload/img-files/2/ca292f8/8585091/34788e79c6bbe7cf7bb578c6fb4d11f8.jpg">
+  <img src="http://outskirts.altervista.org/forum/ext/dmzx/imageupload/img-files/2/ca292f8/8585091/34788e79c6bbe7cf7bb578c6fb4d11f8.jpg" alt="Hypnos logo">
 </p>
 
-<h1 align="center">Hypnos-IJCCRL-071225</h1>
+<h1 align="center">Hypnos - Fork comunitario IJCCRL</h1>
 
-  ### License
+## Aviso sobre licencia y procedencia
 
-Hypnos-IJCCRL-071225 is based on the Stockfish engine and is distributed under the GNU General Public License v3.0.
-See the [LICENSE](./LICENSE) file for details.
+Este proyecto es un **fork permitido bajo la licencia GNU GPLv3** del motor Hypnos (derivado de Stockfish). El código fuente de Hypnos es libre y, de acuerdo con la licencia, cualquiera puede estudiarlo, modificarlo y redistribuirlo; por ello hemos creado esta versión mantenida por **Jorge Ruiz Centelles y Codex Open IA**. Toda la obra sigue amparada por la [GPLv3](./LICENSE), y las aportaciones que añadamos permanecerán bajo la misma licencia para respetar el espíritu de software libre.
 
+## Propósito de esta versión
 
-  ### Hypnos-IJCCRL-071225 Overview
+Nuestro objetivo es mantener un motor UCI sólido y transparente, documentando claramente las posibilidades de uso y las funciones avanzadas que hereda de Hypnos:
 
+- Motor libre y fuerte para análisis y juego automatizado de ajedrez.
+- Compatible con cualquier interfaz gráfica UCI (GUI); el propio motor no incluye tablero ni gestor de partidas.
+- Basado en Stockfish, con divergencias estructurales y un sistema de aprendizaje personalizado heredado de Hypnos.
 
-Hypnos-IJCCRL-071225 is a free and strong UCI chess engine derived from Stockfish
-that analyzes chess positions and computes the optimal moves.
+## Créditos y agradecimientos
 
-Hypnos-IJCCRL-071225 does not include a graphical user interface (GUI) that is required
-to display a chessboard and to make it easy to input moves. These GUIs are 
-developed independently from Hypnos-IJCCRL-071225 and are available online.
+- Gracias al autor y mantenedores originales de **Hypnos**, cuyo trabajo hace posible esta bifurcación.
+- Reconocimiento al equipo de **Stockfish** por el motor base y su apertura a la comunidad.
+- Agradecimiento a **Andrew Grant** por la plataforma [OpenBench](https://github.com/AndyGrant/OpenBench), empleada para pruebas SPRT distribuidas.
 
-  ### Acknowledgements
+## Opciones UCI principales
 
-This project is built upon the  [Stockfish](https://github.com/official-stockfish/Stockfish)  and would not have been possible without the exceptional work of the Stockfish developers.
-While Hypnos-IJCCRL-071225 has diverged from the latest upstream version due to structural differences and the integration of a custom learning system, the core foundation, ideas, and architecture remain deeply rooted in Stockfish.
-I am sincerely grateful to the entire Stockfish team for making such an outstanding engine openly available to the community.
+A continuación se resumen las opciones más utilizadas del motor. Todas se configuran desde la GUI UCI de tu preferencia.
 
-* Andrew Grant for the [OpenBench](https://github.com/AndyGrant/OpenBench) platform.
+### Libros de apertura
 
-Hypnos-IJCCRL-071225 development is currently supported through the OpenBench framework.
-OpenBench, created by Andrew Grant, is an open-source Sequential Probability Ratio Testing (SPRT) framework designed for self-play testing of chess engines.  
-It leverages distributed computing, allowing anyone to contribute CPU time to support the development of some of the world’s strongest chess engines.
+- **Book1 / Book2**: habilita cada libro externo y define su ruta (`Book1 File`, `Book2 File`).
+- **BestBookMove**: limita la selección al mejor movimiento del libro.
+- **Depth / Width**: controlan profundidad máxima (1–350) y número de jugadas candidatas (1–10).
 
+### Autoaprendizaje y experiencia
 
-  #### UCI options
-  
+- **Experience file**: el motor registra posiciones y movimientos para reutilizarlos como libro de experiencia.
+- **Fragmentación**: las posiciones duplicadas se consolidan en memoria para evitar datos redundantes.
+- **Experience Readonly**: sólo lectura del archivo de experiencia.
+- **Experience Book / Width / Eval Importance / Min Depth / Max Moves**: convierten la experiencia en libro de juego, ponderando evaluación frente a frecuencia, estableciendo profundidad mínima y límite de jugadas.
 
-### Book1
+### Modos de búsqueda
 
-Default: False  
-If activated, the engine will use the external book defined in **Book1 File**.
+- **Tactical Mode**: perfil agresivo con menos podas para resolver táctica; aumenta el número de nodos y no se recomienda para controles largos.
+- **Variety / Variety Max Score / Variety Max Moves**: introduce aleatoriedad controlada en posiciones equilibradas, acotando margen de evaluación y número de jugadas.
+- **Random Open Mode**: variedad en aperturas mediante selección probabilística entre mejores movimientos. Configurable con `Random Open Plies`, `Random Open MultiPV`, `Random Open DeltaCp`, `Random Open SoftmaxT` y `Random Seed` para reproducibilidad.
 
-### Book1 File
+### Control de red NNUE
 
-Default: `""` (disabled)  
-Path to the Polyglot opening book used as Book1.
+- **NNUE Dynamic Weights**: combina pesos wMat/wPos según la fase de la partida y la complejidad posicional.
+- **NNUE ManualWeights**: anula el modo dinámico y fija manualmente los pesos con `NNUE StrategyMaterialWeight` y `NNUE StrategyPositionalWeight`.
+- **(Debug) NNUE Log Weights**: registra los parámetros usados en la raíz de la búsqueda.
 
-### Book1 BestBookMove
+## Cómo usar el motor
 
-Default: False  
-If enabled, only the single best move from the book will be played.
+1. Descarga o compila el binario y cárgalo en tu GUI UCI favorita.
+2. Activa o desactiva las opciones anteriores según tu escenario: análisis, autoaprendizaje o partidas amistosas.
+3. Para reproducibilidad en pruebas, define un `Random Seed` mayor que cero.
 
-### Book1 Depth
+## Mejoras realizadas en esta bifurcación
 
-Default: 255 (range: 1–350)  
-Maximum search depth within the opening book.
+- Documentación reescrita en español, aclarando la licencia GPL y el origen como fork comunitario.
+- Agradecimientos explícitos al autor de Hypnos y a los proyectos base.
+- Resumen consolidado de las opciones UCI y su propósito.
 
-### Book1 Width
-
-Default: 1 (range: 1–10)  
-Number of candidate moves considered from the book at the same position.
-
----
-
-### Book2
-
-Default: False  
-If activated, the engine will use the external book defined in **Book2 File**.
-
-### Book2 File
-
-Default: `""` (disabled)  
-Path to the Polyglot opening book used as Book2.
-
-### Book2 BestBookMove
-
-Default: False  
-If enabled, only the single best move from the book will be played.
-
-### Book2 Depth
-
-Default: 255 (range: 1–350)  
-Maximum search depth within the opening book.
-
-### Book2 Width
-
-Default: 1 (range: 1–10)  
-Number of candidate moves considered from the book at the same position.
-	
-  ### Self-Learning
-
-*	### Experience file structure:
-
-1. e4 (from start position)
-1. c4 (from start position)
-1. Nf3 (from start position)
-1 .. c5 (after 1. e4)
-1 .. d6 (after 1. e4)
-
-2 positions and a total of 5 moves in those positions
-
-Now imagine HypnoS plays 1. e4 again, it will store this move in the experience file, but it will be duplicate because 1. e4 is already stored. The experience file will now contain the following:
-1. e4 (from start position)
-1. c4 (from start position)
-1. Nf3 (from start position)
-1 .. c5 (after 1. e4)
-1 .. d6 (after 1. e4)
-1. e4 (from start position)
-
-Now we have 2 positions, 6 moves, and 1 duplicate move (so effectively the total unique moves is 5)
-
-Duplicate moves are a problem and should be removed by merging with existing moves. The merge operation will take the move with the highst depth and ignore the other ones. However, when the engine loads the experience file it will only merge duplicate moves in memory without saving the experience file (to make startup and loading experience file faster)
-
-At this point, the experience file is considered fragmented because it contains duplicate moves. The fragmentation percentage is simply: (total duplicate moves) / (total unique moves) * 100
-In this example we have a fragmentation level of: 1/6 * 100 = 16.67%
-
-
-  ### Experience Readonly
-
-  Default: False If activated, the experience file is only read.
-  
-  ### Experience Book
-
-  HypnoS play using the moves stored in the experience file as if it were a book
-
-  ### Experience Book Width
-
-The number of moves to consider from the book for the same position.
-
-  ### Experience Book Eval Importance
-
-The quality of experience book moves has been revised heavily based on feedback from users. The new logic relies on a new parameter called (Experience Book Eval Importance) which defines how much weight to assign to experience move evaluation vs. count.
-
-The maximum value for this new parameter is: 10, which means the experience move quality will be 100% based on evaluation, and 0% based on count
-
-The minimum value for this new parameter is: 0, which means the experience move quality will be 0% based on evaluation, and 100% based on count
-
-The default value for this new parameter is: 5, which means the experience move quality will be 50% based on evaluation, and 50% based on count	
-
-  ### Experience Book Min Depth
-
-Type: Integer
-Default Value: 27
-Range: Max to 64
-This option sets the minimum depth threshold for moves to be included in the engine's Experience Book. Only moves that have been searched at least to the specified depth will be considered for inclusion.
-
-  ### Experience Book Max Moves
-
-Type: Integer
-Default Value: 16
-Range: 1 to 100
-	This is a setup to limit the number of moves that can be played by the experience book.
-	If you configure 16, the engine will only play 16 moves (if available).
-
-  ### Tactical Mode
-
-Default: false
-Enables a more aggressive search profile intended to improve tactical solving.
-This mode selectively reduces or disables pruning and LMR in specific tactical situations, increasing the engine’s sensitivity to forcing moves, sacrifices, and narrow winning lines.
-
-Tactical Mode is designed for problem-solving; it will significantly increase node count and is not recommended for long-time control competitive play.
-  ### Variety
-
-Enables randomization of move selection in balanced positions not covered by the opening book.  
-A higher value increases the probability of deviating from the mainline, potentially at the cost of Elo.
-
-This option is mainly intended for testing, analysis, or generating varied self-play games.
-
-Set to `0` for fully deterministic behavior.  
-Typical useful range: `10–20` for light variety in early game.
-
- Note: Variety works in combination with `Variety Max Score` and `Variety Max Moves`, which control the conditions under which randomness can apply.
-  ### Variety Max Score
-
-Maximum score threshold (in centipawns) below which randomization of the best move is allowed.  
-If the absolute evaluation is below this value, the engine may apply a small, controlled random bonus  
-to the best move score in order to increase variability in balanced positions.
-
-- A value of `0` disables the feature (fully deterministic behavior).
-- Typical values range from `10` to `30`.
-- The hard maximum is `50`, beyond which the randomness could affect clearly winning or losing positions and is not recommended.
-
-This feature is primarily intended for testing purposes, to introduce diversity in games that would otherwise be repetitive.
-
-  ### Variety Max Moves
-
-Maximum game ply (half-moves) under which the variety bonus can be applied.  
-Once the game progresses beyond this ply count, the randomization feature is disabled.
-
-- `0` disables the feature entirely.
-- Values between `10` and `30` are typical for introducing diversity early in the game.
-- The hard cap is `40`, since variety in late-game scenarios is generally undesirable.
-
-This setting prevents randomness from affecting important endgame decisions. 
-
-
-  ### Random Open Mode
-
-Default: false
-Enables controlled randomization during the opening phase, selecting among near-equal root moves based on a softmax probability distribution.
-
-This feature increases opening variety in self-play, training, and large-scale testing.
-
-Important:
-Random Open Mode does not interfere with Polyglot books nor with the Experience Book (.exp).
-If a book move is available (Polyglot or EXP), the engine plays the book move and completely bypasses Random Open Mode.
-
-  ### Random Open Plies
-
-Default: 16 — Range: 0–20
-Maximum number of plies during which Random Open Mode may be applied.
-Higher values increase opening variety; lower values restrict it to the very early moves.
-
-  ### Random Open MultiPV
-
-Default: 3 — Range: 1–6
-Ensures a minimum MultiPV during the first plies.
-This guarantees a stable pool of alternative moves for the random selector.
-
-  ### Random Open DeltaCp
-
-Default: 25 — Range: 0–100
-Centipawn window used to determine which moves are considered “near-equal” to the best move.
-Only moves within this window can be sampled by Random Open Mode.
-
-  ### Random Open SoftmaxT
-
-Default: 12 — Range: 1–40
-Softmax temperature parameter (in centipawns).
-Controls how strongly the probability distribution favors the top moves.
-
-Low values → more deterministic behavior
-
-High values → more randomness and diversity
-
-  ### Random Seed
-
-Default: 0 — Range: 0–10000
-Controls the reproducibility of the random selection system.
-
-0: non-deterministic (uses system time)
-
->0: deterministic — identical sequences of random choices for the same position and seed
-
-Useful for debugging, regression testing, or reproducible self-play experiments.
-
-  ### NNUE Dynamic Weights
-
-Type: Boolean — Default: true
-
-Description: enables dynamic blending of NNUE weights wMat/wPos using tapered game phase (0..24 → t 0..1024) and a small complexity boost when |psqt - positional| is large. No Shashin.
-
-Interaction: if NNUE ManualWeights = true, Dynamic is bypassed (Manual has priority).
-
-Note: the Dyn Open/Endgame … options below define the profiles used by Dynamic.
-
-  ### NNUE ManualWeights
-
-Type: Boolean — Default: false
-
-Description: forces manual weights:
-
-wMat = 125 + NNUE StrategyMaterialWeight
-
-wPos = 131 + NNUE StrategyPositionalWeight
-and ignores all Dyn … options.
-
-  ### NNUE StrategyMaterialWeight
-
-Type: Integer (-12..12) — Default: 0
-
-Description: delta over 125 (Manual mode only).
-
-  ### NNUE StrategyPositionalWeight
-
-Type: Integer (-12..12) — Default: 0
-
-Description: delta over 131 (Manual mode only).
-
-  ### (Debug) NNUE Log Weights
-
-Type: Boolean — Default: false
-
-Description: prints one line per search at root: wMat/wPos, phase t, small/big net, scaled threshold.
-
-
+Seguiremos añadiendo y documentando nuevas mejoras en cuanto estén listas.
