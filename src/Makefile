@@ -1074,10 +1074,10 @@ profileclean:
 
 # evaluation network (nnue)
 net:
-        @$(SHELL) ../scripts/net.sh
+	@$(SHELL) ../scripts/net.sh
 
 $(NNUE_FILES):
-        @$(SHELL) ../scripts/net.sh
+	@$(SHELL) ../scripts/net.sh
 
 format:
 	$(CLANG-FORMAT) -i $(SRCS) $(HEADERS) -style=file
