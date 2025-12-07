@@ -31,7 +31,7 @@ A quick overview of the most relevant settings (configure them through your pref
 - **Variety / Variety Max Score / Variety Max Moves**: adds controlled randomness in balanced positions with evaluation and move-count limits.
 - **Random Open Mode**: probabilistic selection among strong opening moves; configure with `Random Open Plies`, `Random Open MultiPV`, `Random Open DeltaCp`, `Random Open SoftmaxT`, and `Random Seed` for reproducibility.
 - **NNUE Dynamic Weights**: blends wMat/wPos depending on game phase and positional complexity.
-- **NNUE ManualWeights**: override the dynamic mode with manual weights via `NNUE StrategyMaterialWeight` and `NNUE StrategyPositionalWeight`.
+- **NNUE ManualWeights**: override the dynamic mode with manual weights via `NNUE StrategyMaterialWeight` and `NNUE StrategyPositionalWeight` (both default to 0 with range [-12, 12]).
 - **(Debug) NNUE Log Weights**: logs the weight parameters used at the search root.
 
 ## How to use the engine
@@ -56,7 +56,7 @@ A quick overview of the most relevant settings (configure them through your pref
 ### Control de red NNUE
 
 - **NNUE Dynamic Weights**: combina pesos wMat/wPos según la fase de la partida y la complejidad posicional.
-- **NNUE ManualWeights**: anula el modo dinámico y fija manualmente los pesos con `NNUE StrategyMaterialWeight` y `NNUE StrategyPositionalWeight`.
+- **NNUE ManualWeights**: anula el modo dinámico y fija manualmente los pesos con `NNUE StrategyMaterialWeight` y `NNUE StrategyPositionalWeight` (ambos con valor predeterminado 0 y rango [-12, 12]).
 - **(Debug) NNUE Log Weights**: registra los parámetros usados en la raíz de la búsqueda.
 
 ## Settings
@@ -72,7 +72,7 @@ Recomendaciones rápidas para los controles más habituales. Ajusta los valores 
 | **Experience file** | Activado, tamaño pequeño (p. ej. 64–128 MB) | Activado, tamaño medio (256–512 MB) | Activado, tamaño amplio (1024 MB+) |
 | **Book1 / Book2** | Book1 ligero con `BestBookMove` desactivado | Book1 sólido y Book2 opcional, `BestBookMove` activado | Libros completos, `BestBookMove` activado |
 | **NNUE Dynamic Weights** | Activado | Activado | Activado |
-| **NNUE StrategyMaterialWeight / PositionalWeight** | 64 / 64 (predeterminado) | 80 / 72 para equilibrar | 96 / 80 para partidas largas |
+| **NNUE StrategyMaterialWeight / PositionalWeight** | 0 / 0 (predeterminado) | +4 / +2 para equilibrar | +8 / +6 para partidas largas |
 | **Random Seed** | Valor fijo para reproducibilidad de tests | Valor fijo | Valor fijo |
 
 ## Cómo usar el motor
