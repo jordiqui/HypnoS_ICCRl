@@ -42,6 +42,9 @@ endif
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
+### Engine naming
+ENGINE_NAME = hypnos-ijccrl-071225
+
 ### Built-in benchmark for pgo-builds
 PGOBENCH = $(WINE_PATH) ./$(EXE) bench
 
@@ -119,6 +122,14 @@ endif
 ifeq ($(ARCH), native)
    override ARCH := $(shell $(SHELL) ../scripts/get_native_properties.sh | cut -d " " -f 1)
 endif
+
+### Executable naming
+EXEEXT =
+ifeq ($(target_windows),yes)
+        EXEEXT = .exe
+endif
+
+EXE = $(ENGINE_NAME)-$(ARCH)$(EXEEXT)
 
 # explicitly check for the list of supported architectures (as listed with make help),
 # the user can override with `make ARCH=x86-64-avx512icl SUPPORTED_ARCH=true`
@@ -825,7 +836,7 @@ endif
 
 ### 3.8.3 Try to include architecture
 ifneq ($(ARCH), )
-	CXXFLAGS += -DARCH=$(ARCH)
+        CXXFLAGS += -DARCH_LABEL=\"$(ARCH)\"
 endif
 
 ### 3.9 Link Time Optimization
@@ -882,7 +893,7 @@ build: config-sanity
 
 help:
 	@echo "" && \
-	echo "To compile hypnos, type: " && \
+    echo "To compile hypnos-ijccrl-071225, type: " && \
 	echo "" && \
 	echo "make -j target [ARCH=arch] [COMP=compiler] [COMPCXX=cxx]" && \
 	echo "" && \
@@ -940,16 +951,16 @@ help:
 	echo "" && \
 	echo "Simple examples. If you don't know what to do, you likely want to run one of: " && \
 	echo "" && \
-	echo "make -j profile-build ARCH=x86-64-avx2    # typically a fast compile for common systems " && \
-	echo "make -j profile-build ARCH=x86-64-sse41-popcnt  # A more portable compile for 64-bit systems " && \
-	echo "make -j profile-build ARCH=x86-64         # A portable compile for 64-bit systems " && \
-	echo "" && \
-	echo "Advanced examples, for experienced users: " && \
-	echo "" && \
-	echo "make -j profile-build ARCH=x86-64-avxvnni" && \
-	echo "make -j profile-build ARCH=x86-64-avxvnni COMP=gcc COMPCXX=g++-12.0" && \
-	echo "make -j build ARCH=x86-64-ssse3 COMP=clang" && \
-	echo ""
+        echo "make -j profile-build ARCH=x86-64-avx2    # typically a fast compile for common systems " && \
+        echo "make -j profile-build ARCH=x86-64-sse41-popcnt  # A more portable compile for 64-bit systems " && \
+        echo "make -j profile-build ARCH=x86-64         # A portable compile for 64-bit systems " && \
+        echo "" && \
+        echo "Advanced examples, for experienced users: " && \
+        echo "" && \
+        echo "make -j profile-build ARCH=x86-64-avxvnni" && \
+        echo "make -j profile-build ARCH=x86-64-avxvnni COMP=gcc COMPCXX=g++-12.0" && \
+        echo "make -j build ARCH=x86-64-ssse3 COMP=clang" && \
+        echo ""
 ifneq ($(SUPPORTED_ARCH), true)
 	@echo "Specify a supported architecture with the ARCH option for more details"
 	@echo ""
@@ -996,17 +1007,17 @@ clean: objclean profileclean
 
 # clean binaries and objects
 objclean:
-	@rm -f hypnos hypnos.exe *.o ./syzygy/*.o ./nnue/*.o ./nnue/features/*.o
+        @rm -f $(ENGINE_NAME)-* $(ENGINE_NAME)-*.exe *.o ./syzygy/*.o ./nnue/*.o ./nnue/features/*.o
 
 # clean auxiliary profiling files
 profileclean:
-	@rm -rf profdir
-	@rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s PGOBENCH.out
-	@rm -f hypnos.profdata *.profraw
-	@rm -f hypnos.*args*
-	@rm -f hypnos.*lt*
-	@rm -f hypnos.res
-	@rm -f ./-lstdc++.res
+        @rm -rf profdir
+        @rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s PGOBENCH.out
+        @rm -f $(ENGINE_NAME).profdata *.profraw
+        @rm -f $(ENGINE_NAME).*args*
+        @rm -f $(ENGINE_NAME).*lt*
+        @rm -f $(ENGINE_NAME).res
+        @rm -f ./-lstdc++.res
 
 # evaluation network (nnue)
 net:
@@ -1103,11 +1114,11 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-	$(XCRUN) $(LLVM_PROFDATA) merge -output=hypnos.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use=hypnos.profdata' \
-	EXTRALDFLAGS='-fprofile-use ' \
-	all
+        $(XCRUN) $(LLVM_PROFDATA) merge -output=$(ENGINE_NAME).profdata *.profraw
+        $(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+        EXTRACXXFLAGS='-fprofile-use=$(ENGINE_NAME).profdata' \
+        EXTRALDFLAGS='-fprofile-use ' \
+        all
 
 gcc-profile-make:
 	@mkdir -p profdir
@@ -1118,11 +1129,11 @@ gcc-profile-make:
 	all
 
 gcc-profile-use:
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
-	EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
-	EXTRALDFLAGS='-lgcov' \
-	all
+        $(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+        EXTRACXXFLAGS='-fprofile-use=profdir -fno-peel-loops -fno-tracer' \
+        EXTRACXXFLAGS+=$(EXTRAPROFILEFLAGS) \
+        EXTRALDFLAGS='-lgcov' \
+        all
 
 icx-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
@@ -1131,11 +1142,11 @@ icx-profile-make:
 	all
 
 icx-profile-use:
-	$(XCRUN) $(LLVM_PROFDATA) merge -output=hypnos.profdata *.profraw
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-use=hypnos.profdata' \
-	EXTRALDFLAGS='-fprofile-use ' \
-	all
+        $(XCRUN) $(LLVM_PROFDATA) merge -output=$(ENGINE_NAME).profdata *.profraw
+        $(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+        EXTRACXXFLAGS='-fprofile-instr-use=$(ENGINE_NAME).profdata' \
+        EXTRALDFLAGS='-fprofile-use ' \
+        all
 
 .depend: $(SRCS)
 	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null

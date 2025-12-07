@@ -2,33 +2,33 @@
   <img src="http://outskirts.altervista.org/forum/ext/dmzx/imageupload/img-files/2/ca292f8/8585091/34788e79c6bbe7cf7bb578c6fb4d11f8.jpg">
 </p>
 
-<h1 align="center">HypnoS</h1>
+<h1 align="center">Hypnos-IJCCRL-071225</h1>
 
   ### License
 
-HypnoS is based on the Stockfish engine and is distributed under the GNU General Public License v3.0.
+Hypnos-IJCCRL-071225 is based on the Stockfish engine and is distributed under the GNU General Public License v3.0.
 See the [LICENSE](./LICENSE) file for details.
 
 
-  ### HypnoS Overview
+  ### Hypnos-IJCCRL-071225 Overview
 
 
-HypnoS is a free and strong UCI chess engine derived from Stockfish 
+Hypnos-IJCCRL-071225 is a free and strong UCI chess engine derived from Stockfish
 that analyzes chess positions and computes the optimal moves.
 
-HypnoS does not include a graphical user interface (GUI) that is required 
+Hypnos-IJCCRL-071225 does not include a graphical user interface (GUI) that is required
 to display a chessboard and to make it easy to input moves. These GUIs are 
-developed independently from HypnoS and are available online.
+developed independently from Hypnos-IJCCRL-071225 and are available online.
 
   ### Acknowledgements
 
-This project is built upon the  [Stockfish](https://github.com/official-stockfish/Stockfish)  and would not have been possible without the exceptional work of the Stockfish developers.  
-While HypnoS has diverged from the latest upstream version due to structural differences and the integration of a custom learning system, the core foundation, ideas, and architecture remain deeply rooted in Stockfish.  
+This project is built upon the  [Stockfish](https://github.com/official-stockfish/Stockfish)  and would not have been possible without the exceptional work of the Stockfish developers.
+While Hypnos-IJCCRL-071225 has diverged from the latest upstream version due to structural differences and the integration of a custom learning system, the core foundation, ideas, and architecture remain deeply rooted in Stockfish.
 I am sincerely grateful to the entire Stockfish team for making such an outstanding engine openly available to the community.
 
 * Andrew Grant for the [OpenBench](https://github.com/AndyGrant/OpenBench) platform.
 
-HypnoS development is currently supported through the OpenBench framework.  
+Hypnos-IJCCRL-071225 development is currently supported through the OpenBench framework.
 OpenBench, created by Andrew Grant, is an open-source Sequential Probability Ratio Testing (SPRT) framework designed for self-play testing of chess engines.  
 It leverages distributed computing, allowing anyone to contribute CPU time to support the development of some of the world’s strongest chess engines.
 
