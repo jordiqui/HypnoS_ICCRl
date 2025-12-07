@@ -1560,6 +1560,9 @@ moves_loop:  // When in check, search starts here
 
     int moveCount = 0;
 
+    const Square   ourKingSq    = pos.square<KING>(us);
+    const Bitboard kingPressure = pos.attackers_to(ourKingSq) & pos.pieces(~us);
+
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move()) != Move::none())
@@ -1749,6 +1752,37 @@ moves_loop:  // When in check, search starts here
                 extension = -2;
         }
 
+        const Square   enemyKingSq    = pos.square<KING>(~us);
+        const Bitboard enemyKingRing  = attacks_bb<KING>(enemyKingSq) | enemyKingSq;
+        const bool     recapture      = capture && move.to_sq() == prevSq;
+        const bool     blocksCheck    = ss->inCheck && !givesCheck && type_of(movedPiece) != KING;
+        const bool     attackingH7F7  = (~us == BLACK) && (move.to_sq() == SQ_H7 || move.to_sq() == SQ_F7);
+        const bool     mateThreat     = (~us == BLACK) && givesCheck && (enemyKingRing & move.to_sq());
+        const bool     sacrificialAtk = !pos.see_ge(move, 0) && (givesCheck || (enemyKingRing & move.to_sq()));
+
+        Depth adaptiveExtension = 0;
+
+        if (attackingH7F7)
+            adaptiveExtension = std::max(adaptiveExtension, Depth(1));
+
+        if ((givesCheck && (enemyKingRing & move.to_sq())) || mateThreat)
+            adaptiveExtension = std::max(adaptiveExtension, Depth(1));
+
+        if (recapture || blocksCheck)
+            adaptiveExtension = std::max(adaptiveExtension, Depth(1));
+
+        if (sacrificialAtk)
+            adaptiveExtension = std::max(adaptiveExtension, Depth(1));
+
+        if (kingPressure && blocksCheck)
+            adaptiveExtension = std::max(adaptiveExtension, Depth(1));
+
+        if (givesCheck && ss->inCheck)
+            adaptiveExtension = std::max(adaptiveExtension, Depth(1));
+
+        extension += adaptiveExtension;
+        extension = std::clamp(extension, Depth(-3), Depth(2));
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
@@ -1788,6 +1822,12 @@ moves_loop:  // When in check, search starts here
             ss->statScore = 2 * mainHistory[us][move.raw()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()];
+
+        if (recapture)
+            ss->statScore += 2048;
+
+        if (kingPressure && blocksCheck)
+            ss->statScore += 1024;
 
         // --- Tactical Mode: prioritize king moves ---
         if (tactical && type_of(movedPiece) == KING)
