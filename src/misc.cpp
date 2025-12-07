@@ -41,12 +41,17 @@ namespace Hypnos {
 namespace {
 
 // Version number or dev.
-codex/apply-latest-patch-of-stockfish
-constexpr std::string_view version = "dev-20251203-c109a88e";
-=======
-constexpr std::string_view engineName = "Hypnos-IJCCRL-071225";
-constexpr std::string_view version    = " ";
- master
+#ifndef ENGINE_NAME_STR
+constexpr std::string_view engineName = "HypnosIjccrl-071225";
+#else
+constexpr std::string_view engineName = ENGINE_NAME_STR;
+#endif
+
+#ifndef ENGINE_VERSION_STR
+constexpr std::string_view version = "dev";
+#else
+constexpr std::string_view version = ENGINE_VERSION_STR;
+#endif
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -119,24 +124,24 @@ class Logger {
 }  // namespace
 
 
-// Returns the full name of the current Hypnos-IJCCRL-071225 version.
+// Returns the full name of the current Hypnos-IJCCRL version.
 //
 // For local dev compiles we try to append the commit SHA and
 // commit date from git. If that fails only the local compilation
 // date is set and "nogit" is specified:
-//      Hypnos-IJCCRL-071225 dev-YYYYMMDD-SHA
+//      <engineName> dev-YYYYMMDD-SHA
 //      or
-//      Hypnos-IJCCRL-071225 dev-YYYYMMDD-nogit
+//      <engineName> dev-YYYYMMDD-nogit
 //
 // For releases (non-dev builds) we only include the version number:
-//      Hypnos-IJCCRL-071225 version
+//      <engineName> version
 std::string engine_version_info() {
     std::stringstream ss;
-    ss << engineName << " " << version << std::setfill('0');
+    ss << engineName << std::setfill('0');
 
-    if constexpr (version == "dev")
+    if (version == "dev")
     {
-        ss << "-";
+        ss << " ";
 #ifdef GIT_DATE
         ss << stringify(GIT_DATE);
 #else
@@ -158,8 +163,12 @@ std::string engine_version_info() {
         ss << "nogit";
 #endif
     }
+    else if (!version.empty())
+    {
+        ss << " " << version;
+    }
 
-    
+
 #ifdef ARCH_LABEL
     ss << " [" << ARCH_LABEL << "]";
 #endif

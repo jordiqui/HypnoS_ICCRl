@@ -269,7 +269,8 @@ void UCIEngine::loop() {
         }
         else if (token == "--help" || token == "help" || token == "--license" || token == "license")
             sync_cout
-              << "\nHypnos-IJCCRL-071225 is a powerful chess engine for playing and analyzing."
+              << "\n"
+              << engine_version_info() << " is a powerful chess engine for playing and analyzing."
                  "\nIt is released as free software licensed under the GNU GPLv3 License."
                  "\nHypnos is normally used with a graphical user interface (GUI) and implements"
                  "\nthe Universal Chess Interface (UCI) protocol to communicate with a GUI, an API, etc."

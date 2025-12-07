@@ -45,8 +45,9 @@ endif
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
-### Engine naming
-ENGINE_NAME = hypnos-ijccrl-071225
+### Engine naming helpers
+ENGINE_FAMILY = HypnosIjccrl
+ENGINE_VERSION = 071225
 
 ### Built-in benchmark for pgo-builds
 PGOBENCH = $(WINE_PATH) ./$(EXE) bench
@@ -127,18 +128,45 @@ ifeq ($(ARCH), native)
    override ARCH := $(shell $(SHELL) ../scripts/get_native_properties.sh | cut -d " " -f 1)
 endif
 
+lc = $(shell echo $(1) | tr '[:upper:]' '[:lower:]')
+override ARCH := $(call lc,$(ARCH))
+
+### Engine naming
+ENGINE_FLAVOR := $(ARCH)
+ENGINE_VERSION_TAG := $(ENGINE_VERSION)
+
+ifeq ($(ARCH),x86-64-sse41-popcnt)
+        ENGINE_FLAVOR := sse41popcnt
+        ENGINE_VERSION_TAG := 0771225
+endif
+
+ifeq ($(ARCH),x86-64-fma3)
+        ENGINE_FLAVOR := FMA3
+        ENGINE_VERSION_TAG := 0771225
+endif
+
+ifeq ($(ARCH),x86-64-avx2)
+        ENGINE_FLAVOR := avx2
+endif
+
+ifeq ($(ARCH),x86-64-bmi2)
+        ENGINE_FLAVOR := bmi2
+endif
+
+ENGINE_NAME = $(ENGINE_FAMILY)-$(ENGINE_FLAVOR)-$(ENGINE_VERSION_TAG)
+
 ### Executable naming
 EXEEXT =
 ifeq ($(target_windows),yes)
         EXEEXT = .exe
 endif
 
-EXE = $(ENGINE_NAME)-$(ARCH)$(EXEEXT)
+EXE = $(ENGINE_NAME)$(EXEEXT)
 
 # explicitly check for the list of supported architectures (as listed with make help),
 # the user can override with `make ARCH=x86-64-avx512icl SUPPORTED_ARCH=true`
 ifeq ($(ARCH), $(filter $(ARCH), \
-                 x86-64-avx512icl x86-64-vnni512 x86-64-avx512 x86-64-avxvnni \
+                 x86-64-avx512icl x86-64-vnni512 x86-64-avx512 x86-64-avxvnni x86-64-fma3 \
                  x86-64-bmi2 x86-64-avx2 x86-64-sse41-popcnt x86-64-modern x86-64-ssse3 x86-64-sse3-popcnt \
                  x86-64 x86-32-sse41-popcnt x86-32-sse2 x86-32 ppc-64 ppc-64-altivec ppc-64-vsx ppc-32 e2k \
                  armv7 armv7-neon armv8 armv8-dotprod apple-silicon general-64 general-32 riscv64 \
@@ -165,6 +193,7 @@ avxvnni = no
 avx512 = no
 vnni512 = no
 avx512icl = no
+fma = no
 altivec = no
 vsx = no
 neon = no
@@ -238,12 +267,22 @@ ifeq ($(findstring -modern,$(ARCH)),-modern)
 endif
 
 ifeq ($(findstring -avx2,$(ARCH)),-avx2)
-	popcnt = yes
-	sse = yes
-	sse2 = yes
-	ssse3 = yes
-	sse41 = yes
-	avx2 = yes
+        popcnt = yes
+        sse = yes
+        sse2 = yes
+        ssse3 = yes
+        sse41 = yes
+        avx2 = yes
+endif
+
+ifeq ($(findstring -fma3,$(ARCH)),-fma3)
+        popcnt = yes
+        sse = yes
+        sse2 = yes
+        ssse3 = yes
+        sse41 = yes
+        avx2 = yes
+        fma = yes
 endif
 
 ifeq ($(findstring -avxvnni,$(ARCH)),-avxvnni)
@@ -436,6 +475,7 @@ ifeq ($(MAKELEVEL),0)
 endif
 
 CXXFLAGS = $(ENV_CXXFLAGS) -Wall -Wcast-qual -fno-exceptions -std=c++17 -DHYP_FIXED_ZOBRIST $(EXTRACXXFLAGS)
+CXXFLAGS += -DENGINE_NAME_STR=\"$(ENGINE_NAME)\" -DENGINE_VERSION_STR=\"\" 
 DEPENDFLAGS = $(ENV_DEPENDFLAGS) -std=c++17
 LDFLAGS = $(ENV_LDFLAGS) $(EXTRALDFLAGS)
 
@@ -716,10 +756,16 @@ endif
 
 ### 3.6 SIMD architectures
 ifeq ($(avx2),yes)
-	CXXFLAGS += -DUSE_AVX2
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw icx))
-		CXXFLAGS += -mavx2 -mbmi
-	endif
+        CXXFLAGS += -DUSE_AVX2
+        ifeq ($(comp),$(filter $(comp),gcc clang mingw icx))
+                CXXFLAGS += -mavx2 -mbmi
+        endif
+endif
+
+ifeq ($(fma),yes)
+        ifeq ($(comp),$(filter $(comp),gcc clang mingw icx))
+                CXXFLAGS += -mfma
+        endif
 endif
 
 ifeq ($(avxvnni),yes)
@@ -897,7 +943,7 @@ build: config-sanity
 
 help:
 	@echo "" && \
-    echo "To compile hypnos-ijccrl-071225, type: " && \
+	echo "To compile $(ENGINE_NAME), type: " && \
 	echo "" && \
 	echo "make -j target [ARCH=arch] [COMP=compiler] [COMPCXX=cxx]" && \
 	echo "" && \
@@ -918,6 +964,7 @@ help:
 	echo "x86-64-vnni512          > x86 64-bit with vnni 512bit support" && \
 	echo "x86-64-avx512           > x86 64-bit with avx512 support" && \
 	echo "x86-64-avxvnni          > x86 64-bit with vnni 256bit support" && \
+	echo "x86-64-fma3             > x86 64-bit with avx2 and fma3 support" && \
 	echo "x86-64-bmi2             > x86 64-bit with bmi2 support" && \
 	echo "x86-64-avx2             > x86 64-bit with avx2 support" && \
 	echo "x86-64-sse41-popcnt     > x86 64-bit with sse41 and popcnt support" && \
@@ -955,16 +1002,16 @@ help:
 	echo "" && \
 	echo "Simple examples. If you don't know what to do, you likely want to run one of: " && \
 	echo "" && \
-        echo "make -j profile-build ARCH=x86-64-avx2    # typically a fast compile for common systems " && \
-        echo "make -j profile-build ARCH=x86-64-sse41-popcnt  # A more portable compile for 64-bit systems " && \
-        echo "make -j profile-build ARCH=x86-64         # A portable compile for 64-bit systems " && \
-        echo "" && \
-        echo "Advanced examples, for experienced users: " && \
-        echo "" && \
-        echo "make -j profile-build ARCH=x86-64-avxvnni" && \
-        echo "make -j profile-build ARCH=x86-64-avxvnni COMP=gcc COMPCXX=g++-12.0" && \
-        echo "make -j build ARCH=x86-64-ssse3 COMP=clang" && \
-        echo ""
+	echo "make -j profile-build ARCH=x86-64-avx2    # typically a fast compile for common systems " && \
+	echo "make -j profile-build ARCH=x86-64-sse41-popcnt  # A more portable compile for 64-bit systems " && \
+	echo "make -j profile-build ARCH=x86-64         # A portable compile for 64-bit systems " && \
+	echo "" && \
+	echo "Advanced examples, for experienced users: " && \
+	echo "" && \
+	echo "make -j profile-build ARCH=x86-64-avxvnni" && \
+	echo "make -j profile-build ARCH=x86-64-avxvnni COMP=gcc COMPCXX=g++-12.0" && \
+	echo "make -j build ARCH=x86-64-ssse3 COMP=clang" && \
+	echo ""
 ifneq ($(SUPPORTED_ARCH), true)
 	@echo "Specify a supported architecture with the ARCH option for more details"
 	@echo ""
